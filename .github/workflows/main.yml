@@ -21,7 +21,8 @@ jobs:
             git clone https://github.com/HE-Arc/Mind-vs-Wild.git app
             cd ./app
           fi
-          
+
+          cd api
           export PIPENV_VENV_IN_PROJECT=1
           pipenv install --deploy --ignore-pipfile
           
