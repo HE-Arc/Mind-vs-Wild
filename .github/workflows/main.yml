@@ -21,13 +21,13 @@ jobs:
             git clone https://github.com/HE-Arc/Mind-vs-Wild.git app
             cd ./app
           fi
-          
+          cd api
           export PIPENV_VENV_IN_PROJECT=1
           export PIPENV_IGNORE_VIRTUALENVS=1  # <--- Important !
           export VIRTUAL_ENV=/home/django/project/app/.venv
           export PATH="$VIRTUAL_ENV/bin:$PATH"
 
-          pipenv --rm || true  # Supprime l'ancien environnement s'il existe
+          pipenv --rm || true 
           
           pipenv --python $(which python3)
           pipenv install --deploy --ignore-pipfile
