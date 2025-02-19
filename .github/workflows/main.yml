@@ -43,8 +43,7 @@ jobs:
       - name: Deploy Quasar frontend
         run: |
           cd /home/django/project/app/frontend
-          export NODE_OPTIONS="--max-old-space-size=2048"
-          npm ci
+          npm i
           npm run build
           echo "Frontend built successfully."
 
