@@ -14,35 +14,34 @@ jobs:
           cd /home/django/project
           
           if [ -d "./app" ]; then
-            cd ./app
+            cd app
             git pull origin main
           else
             git clone https://github.com/HE-Arc/Mind-vs-Wild.git app
-            cd ./app
+            cd app
           fi
+          
+          # --- Django part ---
           cd api
           export PIPENV_VENV_IN_PROJECT=1
-          export PIPENV_IGNORE_VIRTUALENVS=1  # <--- Important !
-          export VIRTUAL_ENV=/home/django/project/app/.venv
-          export PATH="$VIRTUAL_ENV/bin:$PATH"
+          export PIPENV_IGNORE_VIRTUALENVS=1
           pipenv --rm || true
-          
           pipenv --python $(which python3)
           pipenv install --deploy --ignore-pipfile
           
-          pipenv run python -m django --version
-          
           pipenv run python manage.py migrate --noinput
           pipenv run python manage.py collectstatic --noinput
-          
+
+          # --- Frontend part ---
           cd ../frontend
           export NODE_OPTIONS="--max-old-space-size=2048"
           npm install
           npm run build
-          cd ..
           
+          # --- Restart services ---
+          cd ..
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
-          
-          echo "Success"
 
+          # Optional success message
+          echo "Success"
