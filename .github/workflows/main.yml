@@ -1,0 +1,40 @@
+name: Deploy Django + Vue.js
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Deploying Django + Vue.js app
+        run: |
+          cd /home/django/project
+          
+          if [ -d "./app" ]; then
+            cd ./app
+            git pull origin main
+          else
+            git clone https://github.com/HE-Arc/Mind-vs-Wild.git app
+            cd ./app
+          fi
+          
+          export PIPENV_VENV_IN_PROJECT=1
+          pipenv install --deploy --ignore-pipfile
+          
+          pipenv run python api/manage.py migrate --noinput
+          
+          pipenv run python api/manage.py collectstatic --noinput
+          
+          cd frontend
+          npm install
+          npm run build
+          cd ..
+
+          sudo systemctl restart gunicorn
+          sudo systemctl restart nginx
+          
+          echo "Déploiement terminé avec succès ! 🎉"
