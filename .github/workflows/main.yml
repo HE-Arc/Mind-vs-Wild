@@ -22,13 +22,16 @@ jobs:
             cd ./app
           fi
           
+          cd api
+          
           export PIPENV_VENV_IN_PROJECT=1
+          export PIPENV_IGNORE_VIRTUALENVS=1  # <--- Important !
           export VIRTUAL_ENV=/home/django/project/app/.venv
           export PATH="$VIRTUAL_ENV/bin:$PATH"
 
-          echo "Using virtual environment: $VIRTUAL_ENV"
-          which python  # Devrait afficher /home/django/project/app/.venv/bin/python
+          pipenv --rm || true  # Supprime l'ancien environnement s'il existe
           
+          pipenv --python $(which python3)
           pipenv install --deploy --ignore-pipfile
           
           pipenv run python -m django --version
@@ -41,6 +44,7 @@ jobs:
           npm run build
           cd ..
           
+          # Redémarrer les services
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
           
