@@ -8,7 +8,6 @@ on:
 jobs:
   Deploy:
     runs-on: self-hosted
-
     steps:
       - name: Deploying Django + Vue.js app
         run: |
@@ -26,8 +25,7 @@ jobs:
           export PIPENV_IGNORE_VIRTUALENVS=1  # <--- Important !
           export VIRTUAL_ENV=/home/django/project/app/.venv
           export PATH="$VIRTUAL_ENV/bin:$PATH"
-
-          pipenv --rm || true 
+          pipenv --rm || true
           
           pipenv --python $(which python3)
           pipenv install --deploy --ignore-pipfile
@@ -38,12 +36,13 @@ jobs:
           pipenv run python manage.py collectstatic --noinput
           
           cd ../frontend
+          export NODE_OPTIONS="--max-old-space-size=4096"
           npm install
           npm run build
           cd ..
           
-          # Redémarrer les services
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
           
           echo "Success"
+
