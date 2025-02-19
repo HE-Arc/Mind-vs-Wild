@@ -37,6 +37,17 @@ export default defineConfig((/* ctx */) => {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
       sourcemap: false,
+
+      rollupOptions: {
+        maxParallelFileReads: 1,
+      },
+
+      minify: 'esbuild',
+
+      esbuild: {
+        concurrency: 1, 
+      },
+
       target: {
         browser: [ 'es2022', 'firefox115', 'chrome115', 'safari14' ],
         node: 'node20'
