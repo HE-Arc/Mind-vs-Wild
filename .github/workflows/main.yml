@@ -43,5 +43,4 @@ jobs:
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
 
-          # Optional success message
           echo "Success"
