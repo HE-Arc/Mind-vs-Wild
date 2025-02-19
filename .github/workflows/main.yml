@@ -23,10 +23,14 @@ jobs:
           fi
           
           export PIPENV_VENV_IN_PROJECT=1
-          pipenv --python $(which python3)
+          export VIRTUAL_ENV=/home/django/project/app/.venv
+          export PATH="$VIRTUAL_ENV/bin:$PATH"
+
+          echo "Using virtual environment: $VIRTUAL_ENV"
+          which python  # Devrait afficher /home/django/project/app/.venv/bin/python
+          
           pipenv install --deploy --ignore-pipfile
           
-          # Vérifier que Django est bien installé
           pipenv run python -m django --version
           
           pipenv run python manage.py migrate --noinput
