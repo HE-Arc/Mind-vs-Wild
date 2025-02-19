@@ -37,4 +37,4 @@ jobs:
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
           
-          echo "Déploiement terminé avec succès ! 🎉"
+          echo "Success"
