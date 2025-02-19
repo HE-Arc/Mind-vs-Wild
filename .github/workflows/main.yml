@@ -6,41 +6,54 @@ on:
       - main
 
 jobs:
-  Deploy:
+  Update_Code:
     runs-on: self-hosted
     steps:
-      - name: Deploying Django + Vue.js app
+      - name: Checkout or update code
         run: |
           cd /home/django/project
-          
           if [ -d "./app" ]; then
             cd app
             git pull origin main
           else
             git clone https://github.com/HE-Arc/Mind-vs-Wild.git app
-            cd app
           fi
-          
-          # --- Django part ---
-          cd api
+          echo "Code updated successfully."
+
+  Deploy_Django:
+    runs-on: self-hosted
+    needs: Update_Code
+    steps:
+      - name: Deploy Django backend
+        run: |
+          cd /home/django/project/app/api
           export PIPENV_VENV_IN_PROJECT=1
           export PIPENV_IGNORE_VIRTUALENVS=1
           pipenv --rm || true
           pipenv --python $(which python3)
           pipenv install --deploy --ignore-pipfile
-          
           pipenv run python manage.py migrate --noinput
           pipenv run python manage.py collectstatic --noinput
+          echo "Django backend deployed successfully."
 
-          # --- Frontend part ---
-          cd ../frontend
+  Deploy_Frontend:
+    runs-on: self-hosted
+    needs: Update_Code
+    steps:
+      - name: Deploy Quasar frontend
+        run: |
+          cd /home/django/project/app/frontend
           export NODE_OPTIONS="--max-old-space-size=1024"
-          npm install
+          npm ci
           npm run build
-          
-          # --- Restart services ---
-          cd ..
+          echo "Frontend built successfully."
+
+  Restart_Services:
+    runs-on: self-hosted
+    needs: [Deploy_Django, Deploy_Frontend]
+    steps:
+      - name: Restart Gunicorn and Nginx
+        run: |
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
-
-          echo "Success"
+          echo "Services restarted successfully."
