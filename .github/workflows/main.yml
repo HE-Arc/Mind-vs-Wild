@@ -22,8 +22,6 @@ jobs:
             cd ./app
           fi
           
-          cd api
-          
           export PIPENV_VENV_IN_PROJECT=1
           export PIPENV_IGNORE_VIRTUALENVS=1  # <--- Important !
           export VIRTUAL_ENV=/home/django/project/app/.venv
