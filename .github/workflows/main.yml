@@ -18,7 +18,6 @@ jobs:
           else
             git clone https://github.com/HE-Arc/Mind-vs-Wild.git app
           fi
-          echo "Code updated successfully."
 
   Deploy_Django:
     runs-on: self-hosted
@@ -34,7 +33,6 @@ jobs:
           pipenv install --deploy --ignore-pipfile
           pipenv run python manage.py migrate --noinput
           pipenv run python manage.py collectstatic --noinput
-          echo "Django backend deployed successfully."
 
   Deploy_Frontend:
     runs-on: self-hosted
@@ -54,5 +52,3 @@ jobs:
       - name: Restart Gunicorn and Nginx
         run: |
           sudo systemctl restart gunicorn
-          sudo systemctl restart nginx
-          echo "Services restarted successfully."
