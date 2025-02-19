@@ -22,7 +22,6 @@ jobs:
             cd ./app
           fi
 
-          cd api
           export PIPENV_VENV_IN_PROJECT=1
           pipenv --python $(which python3)
           pipenv install --deploy --ignore-pipfile
