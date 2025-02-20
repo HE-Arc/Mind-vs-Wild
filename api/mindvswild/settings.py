@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-*q5)k*=^uf-dn*vj#=y!tu5l%6^ii#6c!q@_$+^q@@h%io7!$+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://mind-vs-wild.k8s.ing.he-arc.ch", 'api-mind-vs-wild.k8s.ing.he-arc.ch']
+ALLOWED_HOSTS = ["https://mind-vs-wild.k8s.ing.he-arc.ch", "https://api-mind-vs-wild.k8s.ing.he-arc.ch"]
 
 
 # Application definition
