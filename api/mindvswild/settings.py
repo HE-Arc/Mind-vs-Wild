@@ -28,19 +28,19 @@ SECRET_KEY = 'django-insecure-*q5)k*=^uf-dn*vj#=y!tu5l%6^ii#6c!q@_$+^q@@h%io7!$+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["https://mind-vs-wild.k8s.ing.he-arc.ch"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
