@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-*q5)k*=^uf-dn*vj#=y!tu5l%6^ii#6c!q@_$+^q@@h%io7!$+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://mind-vs-wild.k8s.ing.he-arc.ch"]
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 
 # Application definition
@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'authentication'
 ]
 
 MIDDLEWARE = [
@@ -51,8 +53,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'mindvswild.urls'
 
 TEMPLATES = [
