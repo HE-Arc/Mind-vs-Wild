@@ -1,24 +1,17 @@
 <template>
     <q-layout>
         <q-page-container>
-            <q-page class="flex flex-center">
-                <q-card class="q-pa-md" style="width: 400px;">
-                    <q-card-section>
-                        <div class="text-h6">Connexion</div>
-                    </q-card-section>
-
-                    <q-card-section>
-                        <q-input v-model="username" label="Nom d'utilisateur" outlined />
-                        <q-input v-model="password" label="Mot de passe" type="password" outlined class="q-mt-md" />
-                        <q-btn label="Se connecter" color="primary" class="full-width q-mt-md" @click="login" />
-                        <router-link to="/register" class="q-mt-md">Pas de compte ? S'inscrire</router-link>
-
-                    </q-card-section>
-
+            <q-page class="flex flex-center full-height full-width justify-center">
+                <div class="flex flex-column full-width items-center">
+                    <q-img src="/logo.png" class="q-mb-md q-mx-auto logo-img"/>
+                    <q-input rounded standout v-model="username" label="Nom d'utilisateur" bg-color="white" class="full-width"/>
+                    <q-input rounded outlined v-model="password" label="Mot de passe" type="password" bg-color="white" class="q-mt-md full-width"/>
+                    <q-btn rounded label="Se connecter" class="full-width q-mt-md btn" @click="login" />
                     <q-card-section v-if="errorMessage" class="text-negative">
                         {{ errorMessage }}
                     </q-card-section>
-                </q-card>
+                    <router-link to="/register" class="q-mt-md">Pas de compte ? S'inscrire</router-link>
+                </div>
             </q-page>
         </q-page-container>
     </q-layout>
@@ -53,3 +46,18 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.btn {
+    margin-top: 1rem;
+    background-color: #EE7154;
+    color: white;
+}
+
+.logo-img {
+    max-width: 400px;
+    max-height: 400px;
+    border-radius: 50%;
+}
+
+</style>
