@@ -36,6 +36,7 @@ export default {
     const email = ref('')
     const username = ref('')
     const password = ref('')
+    const confirmPassword = ref('')
     const errorMessage = ref('')
 
     const register = async () => {
@@ -45,7 +46,8 @@ export default {
           last_name: lastName.value,
           email: email.value,
           username: username.value,
-          password: password.value
+          password: password.value,
+          confirmPassword: confirmPassword.value
         })
 
         console.log(response.data)
@@ -55,7 +57,7 @@ export default {
       }
     }
 
-    return { firstName, lastName, email, username, password, register, errorMessage }
+    return { firstName, lastName, email, username, password, confirmPassword,register, errorMessage }
   }
 }
 </script>
@@ -74,13 +76,13 @@ export default {
 }
 
 .q-form {
-  max-width: 800px; /* Augmente la largeur du formulaire */
-  width: 100%; /* S'assure qu'il prend toute la largeur dispo */
+  max-width: 800px; 
+  width: 100%; 
 }
 
 .q-input {
-  font-size: 1.2rem; /* Agrandit le texte */
-  min-height: 56px; /* Augmente la hauteur des champs */
+  font-size: 1.2rem; 
+  min-height: 56px; 
 }
 
 </style>
