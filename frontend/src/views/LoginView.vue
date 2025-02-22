@@ -4,8 +4,8 @@
             <q-page class="flex flex-center full-height full-width justify-center">
                 <div class="flex flex-column full-width items-center">
                     <q-img src="/logo.png" class="q-mb-md q-mx-auto logo-img"/>
-                    <q-input rounded standout v-model="username" label="Nom d'utilisateur" bg-color="white" class="full-width"/>
-                    <q-input rounded standout v-model="password" label="Mot de passe" type="password" bg-color="white" class="q-mt-md full-width"/>
+                    <q-input rounded standout v-model="username" label="Nom d'utilisateur" bg-color="white" color="black" input-style="color: black;" class="full-width "/>
+                    <q-input rounded standout v-model="password" label="Mot de passe" type="password" bg-color="white" color="black" input-style="color: black;" class="q-mt-md full-width"/>
                     <q-btn rounded label="Se connecter" class="full-width q-mt-md btn" @click="login" />
                     <q-card-section v-if="errorMessage" class="text-negative">
                         {{ errorMessage }}
