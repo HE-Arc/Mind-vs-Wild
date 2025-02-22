@@ -3,6 +3,9 @@ from django.contrib.auth import authenticate, login
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+from .UserUpdateSerializer import UserUpdateSerializer
 
 
 @api_view(['POST'])
@@ -45,3 +48,30 @@ def register_api(request):
     )
 
     return Response({'message': 'User created successfully'}, status=201)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user(request):
+    user = request.user
+    return Response({'user': {'username' : user.username ,'email': user.email}}, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user(request):
+    user = request.user  
+    serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'message': 'User updated successfully', 'user': serializer.data}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request):
+    user = request.user
+    user.delete()
+    return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
