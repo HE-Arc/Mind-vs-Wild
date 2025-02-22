@@ -1,50 +1,86 @@
 <template>
-    <q-layout>
-      <q-page-container>
-        <q-form @submit="register" @reset="reset" class="q-gutter-md">
-          <q-input v-model="firstName" label="Prénom*" required outlined />
-          <q-input v-model="lastName" label="Nom*" required outlined />
-          <q-input v-model="email" label="Adresse email*" required outlined />
-          <q-input v-model="username" label="Nom d'utilisateur*" required outlined />
-          <q-input v-model="password" label="Mot de passe*" type="password" required outlined class="q-mt-md" />
-          <q-btn label="S'inscrire" type="submit" color="primary" class="full-width q-mt-md" />
-        </q-form>
-      </q-page-container>
-    </q-layout>
-  </template>
-  
-  <script>
-  import { ref } from 'vue'
-  import axios from 'axios'
-  
-  export default {
-    setup() {
-      const firstName = ref('')
-      const lastName = ref('')
-      const email = ref('')
-      const username = ref('')
-      const password = ref('')
-      const errorMessage = ref('')
-  
-      const register = async () => {
-        try {
-          const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', {
-            first_name: firstName.value,
-            last_name: lastName.value,
-            email: email.value,
-            username: username.value,
-            password: password.value
-          })
-  
-          console.log(response.data)
-        } catch (error) {
-          errorMessage.value = error.response?.data?.error || "Unknown error"
-          console.error(errorMessage.value)
-        }
+  <q-layout>
+    <q-page-container>
+      <q-page class="flex flex-center full-height full-width justify-center">
+        <div class="flex flex-column items-center full-width">
+          <q-img src="/logo.png" class="q-mb-md q-mx-auto logo-img" />
+          <q-form @submit="register" @reset="reset" class="q-gutter-md full-width q-form">
+            <q-input rounded standout bg-color="white" v-model="firstName" label="Prénom*" class="full-width" required
+              outlined />
+            <q-input rounded standout bg-color="white" v-model="lastName" label="Nom*" class="full-width" required
+              outlined />
+            <q-input rounded standout bg-color="white" v-model="email" label="Adresse email*" class="full-width"
+              required outlined />
+            <q-input rounded standout bg-color="white" v-model="username" label="Nom d'utilisateur*" class="full-width"
+              required outlined />
+            <q-input rounded standout bg-color="white" v-model="password" label="Mot de passe*" type="password" required
+              outlined class="full-width" />
+            <q-input rounded standout bg-color="white" v-model="password" label="Confirmer le mot de passe*"
+              type="password" required outlined class="full-width" />
+            <q-btn rounded label="S'inscrire" type="submit" class="full-width btn" />
+          </q-form>
+        </div>
+      </q-page>
+    </q-page-container>
+  </q-layout>
+</template>
+
+<script>
+import { ref } from 'vue'
+import axios from 'axios'
+
+export default {
+  setup() {
+    const firstName = ref('')
+    const lastName = ref('')
+    const email = ref('')
+    const username = ref('')
+    const password = ref('')
+    const errorMessage = ref('')
+
+    const register = async () => {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', {
+          first_name: firstName.value,
+          last_name: lastName.value,
+          email: email.value,
+          username: username.value,
+          password: password.value
+        })
+
+        console.log(response.data)
+      } catch (error) {
+        errorMessage.value = error.response?.data?.error || "Unknown error"
+        console.error(errorMessage.value)
       }
-  
-      return { firstName, lastName, email, username, password, register, errorMessage }
     }
+
+    return { firstName, lastName, email, username, password, register, errorMessage }
   }
-  </script>
-  
+}
+</script>
+
+<style scoped>
+.btn {
+  margin-top: 1rem;
+  background-color: #EE7154;
+  color: white;
+}
+
+.logo-img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 50%;
+}
+
+.q-form {
+  max-width: 800px; /* Augmente la largeur du formulaire */
+  width: 100%; /* S'assure qu'il prend toute la largeur dispo */
+}
+
+.q-input {
+  font-size: 1.2rem; /* Agrandit le texte */
+  min-height: 56px; /* Augmente la hauteur des champs */
+}
+
+</style>
