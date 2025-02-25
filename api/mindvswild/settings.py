@@ -36,13 +36,15 @@ ALLOWED_HOSTS = ["https://mind-vs-wild.k8s.ing.he-arc.ch", "localhost", "127.0.0
 
 INSTALLED_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mindvswild',
+    'corsheaders',
+    'authentication'
 ]
 
 MIDDLEWARE = [
@@ -53,8 +55,21 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+]
+CORS_ALLOW_CREDENTIALS = True  
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173", 
+]
+
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+]
 ROOT_URLCONF = 'mindvswild.urls'
 
 TEMPLATES = [
