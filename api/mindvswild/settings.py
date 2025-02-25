@@ -24,10 +24,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*q5)k*=^uf-dn*vj#=y!tu5l%6^ii#6c!q@_$+^q@@h%io7!$+'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ["https://mind-vs-wild.k8s.ing.he-arc.ch", "localhost", "127.0.0.1", "https://api-mind-vs-wild.k8s.ing.he-arc.ch"]
 
@@ -58,13 +58,10 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 CORS_ALLOW_CREDENTIALS = True  
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", 
-]
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173", 
-]
+# CORS Settings
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS').split(',')
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS').split(',')
 
 CORS_ALLOW_HEADERS = [
     'authorization',
@@ -96,30 +93,16 @@ WSGI_APPLICATION = 'mindvswild.wsgi.application'
 
 ENVIRONMENT = config('ENVIRONMENT', default='local')
 
-if ENVIRONMENT == 'production':
-    # Configuration pour le déploiement
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST'),  
-            'PORT': config('DB_PORT'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
-else:
-    # Configuration pour le développement local
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'mindvswild_db',
-            'USER': 'postgres',
-            'PASSWORD': 'supersecurepassword',
-            'HOST': 'localhost',  
-            'PORT': '5432',
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
