@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ["127.0.0.1"]
 
 INSTALLED_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,7 +56,19 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True  
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173", 
+]
+
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+]
 ROOT_URLCONF = 'mindvswild.urls'
 
 TEMPLATES = [
