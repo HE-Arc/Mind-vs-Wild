@@ -55,3 +55,10 @@ def get_user(request):
             'email': user.email,
         }
     }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    request.user.auth_token.delete()
+    return Response({'message': 'User logged out successfully'}, status=status.HTTP_200_OK)
