@@ -2,7 +2,8 @@
   <div v-if="user">
     <h1>Welcome, {{ user.username }}!</h1>
     <p>Email: {{ user.email }}</p>
-    <q-btn label="logout" @click="logout" />
+    <q-btn label="Logout" @click="logout" />
+    <q-btn label="Delete" @click="delete_user" />
   </div>
   <div v-else>
     <p>Loading...</p>
@@ -32,20 +33,30 @@ export default defineComponent({
     };
 
     const logout = async () => {
-  try {
-    await axios.post(
-      'http://127.0.0.1:8000/api/auth/logout/',
-      {}, 
-      { headers: { Authorization: `Token ${token}` } } 
-    );
+      try {
+        await axios.post(
+          'http://127.0.0.1:8000/api/auth/logout/',
+          {},
+          { headers: { Authorization: `Token ${token}` } }
+        );
 
-    localStorage.removeItem('token');
+        localStorage.removeItem('token');
 
-    window.location.href = '/';
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
-};
+        window.location.href = '/login';
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    };
+
+    const delete_user = async () => {
+      try {
+        await axios.delete('http://127.0.0.1:8000/api/auth/delete/', {
+          headers: { Authorization: `Token ${token}` }});
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        } catch (error) {
+          console.error('Delete failed:', error);
+        }};
 
     onMounted(() => {
       getUserProfile();
@@ -53,7 +64,8 @@ export default defineComponent({
 
     return {
       user,
-      logout
+      logout,
+      delete_user
     };
   }
 });

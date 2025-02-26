@@ -62,3 +62,15 @@ def get_user(request):
 def logout(request):
     request.user.auth_token.delete()
     return Response({'message': 'User logged out successfully'}, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_user(request):
+    user = request.user
+    if hasattr(user, 'auth_token'):
+        user.auth_token.delete()
+    user.delete()
+
+    return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
+
