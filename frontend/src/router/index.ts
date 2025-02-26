@@ -31,8 +31,8 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: '/profil',
-      name: 'profil',
+      path: '/profile',
+      name: 'profile',
       component: ProfileView,
     },
   ],

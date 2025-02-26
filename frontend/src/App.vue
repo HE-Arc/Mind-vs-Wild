@@ -22,6 +22,7 @@ header {
   left: 0;
   width: 100%;
   height: auto; 
+  max-height: 60px;
   background-color: var(--color-background);
   padding: 1rem 0;
   z-index: 1000;

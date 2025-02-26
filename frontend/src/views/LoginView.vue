@@ -1,8 +1,8 @@
 <template>
     <q-layout>
         <q-page-container>
-            <q-page class="flex flex-center full-height full-width justify-center">
-                <div class="flex flex-column full-width items-center">
+            <q-page class="flex flex-center justify-center ">
+                <div class="flex flex-column items-center">
                     <q-img src="/logo.png" class="q-mb-md q-mx-auto logo-img"/>
                     <q-input rounded standout v-model="username" label="Nom d'utilisateur" bg-color="white" color="black" input-style="color: black;" class="full-width "/>
                     <q-input rounded standout v-model="password" label="Mot de passe" type="password" bg-color="white" color="black" input-style="color: black;" class="q-mt-md full-width"/>
@@ -40,7 +40,7 @@ export default {
                 const token = response.data.token
                 localStorage.setItem('token', token)
                 
-                router.push('/profil')
+                router.push('/profile')
             } catch (error) {
                 errorMessage.value = error.response?.data?.error || "Unknow error"
             }
@@ -59,8 +59,8 @@ export default {
 }
 
 .logo-img {
-    max-width: 400px;
-    max-height: 400px;
+    max-width: 300px;
+    max-height: 300px;
     border-radius: 50%;
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
   <q-layout>
     <q-page-container>
-      <q-page class="flex flex-center full-height full-width justify-center">
-        <div class="flex flex-column items-center full-width">
+      <q-page class="flex flex-column flex-center justify-center">
+        <div class="flex flex-column items-center ">
           <q-img src="/logo.png" class="q-mb-md q-mx-auto logo-img" />
           <q-form @submit="register" @reset="reset" class="q-gutter-md full-width q-form">
             <q-input rounded standout bg-color="white" color="black" input-style="color: black;" v-model="email" label="Adresse email*" class="full-width"
