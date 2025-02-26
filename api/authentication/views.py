@@ -74,3 +74,28 @@ def delete_user(request):
 
     return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
 
+@api_view(['PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_user(request):
+    user = request.user
+    data = request.data.copy() 
+
+    blocked_fields = ['is_staff', 'is_superuser']
+    for field in blocked_fields:
+        data.pop(field, None)
+
+    serializer = UserSerializer(user, data=data, partial=True)
+    
+    if serializer.is_valid():
+        if 'password' in data:
+            user.set_password(data['password'])
+            user.save() 
+        else:
+            serializer.save()
+        
+        return Response({'message': 'User updated successfully', 'user': serializer.data}, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
