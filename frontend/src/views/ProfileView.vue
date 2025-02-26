@@ -123,7 +123,7 @@ export default defineComponent({
   min-height: calc(100vh - 60px);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: end;
 }
 
 .profile-card {
