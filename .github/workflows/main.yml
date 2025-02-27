@@ -26,6 +26,8 @@ jobs:
       - name: Deploy Django backend
         run: |
           cd /home/django/project/app/api
+          python3 -m venv /home/django/project/venv
+          source /home/django/project/venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
           python manage.py migrate --noinput
