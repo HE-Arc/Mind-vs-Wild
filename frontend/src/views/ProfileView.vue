@@ -15,7 +15,7 @@
             bg-color="white" color="black" input-style="color: black;" />
           <q-input rounded standout class="profile-input" v-model="confirmPassword" type="password"
             label="Confirmer le mot de passe" bg-color="white" color="black" input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Change Password" @click="update_user" />
+          <q-btn rounded class="profile-btn" label="Modifier le mot de passe" @click="update_user" />
 
           <q-btn rounded class="delete-btn" label="Supprimer le compte" @click="delete_user" />
           <q-btn rounded class="profile-btn" label="Se déconnecter" @click="logout" />
@@ -137,7 +137,7 @@ export default defineComponent({
   margin: 10px;
   width: auto;
   flex-grow: 1;
-  max-width: 250px;
+  max-width: 350px;
 }
 
 .profile-input {
