@@ -17,12 +17,13 @@
     </q-layout>
 </template>
 
-<script>
-import { ref } from 'vue'
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-export default {
+export default defineComponent({
+    name: 'LoginView',
     setup() {
         const username = ref('')
         const password = ref('')
@@ -41,13 +42,13 @@ export default {
                 
                 router.push('/profile')
             } catch (error) {
-                errorMessage.value = error.response?.data?.error || "Unknow error"
+                errorMessage.value = (error as any).response?.data?.error || "Unknow error"
             }
         }
 
         return { username, password, login, errorMessage }
     }
-}
+});
 </script>
 
 <style scoped>
