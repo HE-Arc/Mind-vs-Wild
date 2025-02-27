@@ -5,20 +5,20 @@
         <q-card class="profile-card">
           <q-input rounded standout class="profile-input" v-model="user.username" bg-color="white" color="black"
             input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Change Username" @click="update_user" />
+          <q-btn rounded class="profile-btn" label="Modifier le nom d'utilisateur" @click="update_user" />
 
           <q-input rounded standout class="profile-input" v-model="user.email" bg-color="white" color="black"
             input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Change Email" @click="update_user" />
+          <q-btn rounded class="profile-btn" label="Modifier l'adresse email" @click="update_user" />
 
-          <q-input rounded standout class="profile-input" v-model="password" type="password" label="Password"
+          <q-input rounded standout class="profile-input" v-model="password" type="password" label="Modifier le mot de passe"
             bg-color="white" color="black" input-style="color: black;" />
           <q-input rounded standout class="profile-input" v-model="confirmPassword" type="password"
-            label="Confirm Password" bg-color="white" color="black" input-style="color: black;" />
+            label="Confirmer le mot de passe" bg-color="white" color="black" input-style="color: black;" />
           <q-btn rounded class="profile-btn" label="Change Password" @click="update_user" />
 
-          <q-btn rounded class="delete-btn" label="Delete Account" @click="delete_user" />
-          <q-btn rounded class="profile-btn" label="logout" @click="logout" />
+          <q-btn rounded class="delete-btn" label="Supprimer le compte" @click="delete_user" />
+          <q-btn rounded class="profile-btn" label="Se déconnecter" @click="logout" />
         </q-card>
       </q-page>
     </q-page-container>
