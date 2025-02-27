@@ -35,7 +35,7 @@ export default {
 
     const register = async () => {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register/`, {
           username: username.value,
           password: password.value,
           email: email.value,

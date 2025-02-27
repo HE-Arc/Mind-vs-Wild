@@ -48,7 +48,7 @@ const router = createRouter({
 
         if (token) {
           try {
-            const response = await axios.get("http://127.0.0.1:8000/api/auth/get/", {
+            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
               headers: { Authorization: `Token ${token}` },
               withCredentials: true
             });
@@ -59,7 +59,6 @@ const router = createRouter({
               next('/login'); 
             }
           } catch (error) {
-            console.error('Erreur lors de la vérification du token', error);
             next('/login'); 
           }
         } else {
