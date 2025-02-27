@@ -35,7 +35,6 @@ export default {
                     username: username.value,
                     password: password.value
                 })
-                console.log(response.data)
 
                 const token = response.data.token
                 localStorage.setItem('token', token)
