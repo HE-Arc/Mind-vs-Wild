@@ -28,6 +28,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'UserProfile',
@@ -37,6 +38,7 @@ export default defineComponent({
     const confirmPassword = ref('');
     const token = localStorage.getItem('token');
     const message = ref('');
+    const router = useRouter()
 
     const getUserProfile = async () => {
       try {
@@ -60,7 +62,7 @@ export default defineComponent({
 
         localStorage.removeItem('token');
 
-        window.location.href = '/';
+        router.push('/login');
       } catch (error) {
         console.error('Logout failed:', error);
       }

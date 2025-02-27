@@ -22,6 +22,8 @@
 <script>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
+
 
 export default {
   setup() {
@@ -32,6 +34,7 @@ export default {
     const password = ref('')
     const confirmPassword = ref('')
     const errorMessage = ref('')
+    const router = useRouter()
 
     const register = async () => {
       try {
@@ -40,15 +43,13 @@ export default {
           password: password.value,
           email: email.value,
         })
-
-        console.log(response.data)
+        router.push('/login');
       } catch (error) {
         errorMessage.value = error.response?.data?.error || "Unknown error"
-        console.error(errorMessage.value)
       }
     }
 
-    return { firstName, lastName, email, username, password, confirmPassword,register, errorMessage }
+    return {email, username, password, register, errorMessage }
   }
 }
 </script>
