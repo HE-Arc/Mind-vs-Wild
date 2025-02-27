@@ -28,10 +28,8 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-print(DEBUG)
 
-ALLOWED_HOSTS = ["mind-vs-wild.k8s.ing.he-arc.ch", "localhost", "127.0.0.1", "api-mind-vs-wild.k8s.ing.he-arc.ch"]
-
+ALLOWED_HOSTS = tuple(config('ALLOWED_HOSTS').split(','))
 
 # Application definition
 
