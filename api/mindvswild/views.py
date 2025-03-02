@@ -1,6 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.utils import timezone
+from datetime import timedelta
+import secrets
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Group, GroupUser, GroupInvitation, Room, RoomUser
@@ -29,23 +33,52 @@ class GroupViewSet(viewsets.ModelViewSet):
     # Invite un utilisateur dans le groupe
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def invite(self, request, pk=None):
-        """Invite un utilisateur dans le groupe"""
+        """Créer une invitation pour rejoindre le groupe (avec token)"""
         group = self.get_object()
-        if not GroupUser.objects.filter(group=group, user=request.user, is_admin=True).exists():
+        # Vérif admin
+        membership = GroupUser.objects.filter(group=group, user=request.user, is_admin=True).first()
+        if not membership:
             return Response({"detail": "Permission refusée. Seul un admin peut inviter."},
                             status=status.HTTP_403_FORBIDDEN)
-        
-        username = request.data.get('username')
-        if username:
-            target_user = get_object_or_404(User, username=username)
-            if GroupUser.objects.filter(group=group, user=target_user).exists():
-                return Response({"detail": "Cet utilisateur est déjà membre."}, 
-                                status=status.HTTP_400_BAD_REQUEST)
-            GroupUser.objects.create(group=group, user=target_user)
-            return Response({"detail": f"Invitation envoyée à {username}"}, status=status.HTTP_200_OK)
-        
-        return Response({"detail": "Username requis."}, status=status.HTTP_400_BAD_REQUEST)
 
+        username = request.data.get('username', None)
+        # Si un username est fourni, c'est une invitation nominative.
+        invited_user = None
+        if username:
+            try:
+                invited_user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"detail": "Utilisateur introuvable."}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+            # Vérifier s'il est déjà dans le groupe
+            if GroupUser.objects.filter(group=group, user=invited_user).exists():
+                return Response({"detail": "Cet utilisateur est déjà membre du groupe."}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+        
+        # Générer un token
+        token = secrets.token_urlsafe(16)
+        # Expiration dans 7 jours, par exemple
+        expires_at = timezone.now() + timedelta(days=7)
+
+        invitation = GroupInvitation.objects.create(
+            group=group,
+            invited_by=request.user,
+            invited_user=invited_user,  # peut être None si on veut un lien "générique"
+            token=token,
+            expires_at=expires_at
+        )
+
+        # Construire l'URL d'invitation (côté frontend, par exemple)
+        # On suppose que le front a une route /accept-invite/:token
+        invite_url = f"{request.scheme}://{request.get_host()}/#/accept-invite/{token}"
+
+        return Response({
+            "invite_token": token,
+            "invite_url": invite_url,
+            "expires_at": expires_at,
+            "invited_user": username if username else None
+        }, status=status.HTTP_201_CREATED)
+        
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def leave(self,request,pk=None):
         """Quitter un groupe"""
@@ -115,3 +148,45 @@ class RoomViewSet(viewsets.ModelViewSet):
         # Ajouter l'utilisateur à la room
         RoomUser.objects.get_or_create(room=room, user=request.user)
         return Response({"detail": "Vous avez rejoint la room."}, status=status.HTTP_200_OK)
+    
+class AcceptInviteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, token):
+        """Accepter une invitation via token"""
+        try:
+            invitation = GroupInvitation.objects.get(token=token)
+        except GroupInvitation.DoesNotExist:
+            return Response({"detail": "Invitation invalide ou inexistante."}, 
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # Vérifier validité (expiration, used)
+        if not invitation.is_valid():
+            return Response({"detail": "Invitation expirée ou déjà utilisée."}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Si invitation nominative, s'assurer que c'est la bonne personne
+        if invitation.invited_user:
+            if invitation.invited_user != request.user:
+                return Response({"detail": "Cette invitation n'est pas pour cet utilisateur."}, 
+                                status=status.HTTP_403_FORBIDDEN)
+        else:
+            # invitation "générique" => pas de check sur invited_user
+            pass
+
+        # Vérifier si déjà membre
+        group = invitation.group
+        if GroupUser.objects.filter(group=group, user=request.user).exists():
+            return Response({"detail": "Vous êtes déjà membre de ce groupe."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # OK, on ajoute l'utilisateur au groupe
+        GroupUser.objects.create(group=group, user=request.user, is_admin=False)
+
+        # Marquer l'invitation comme utilisée pour qu'on ne puisse plus la réutiliser
+        invitation.used = True
+        invitation.save()
+
+        # Renvoyer les infos du groupe
+        serializer = GroupSerializer(group)
+        return Response(serializer.data, status=status.HTTP_200_OK)

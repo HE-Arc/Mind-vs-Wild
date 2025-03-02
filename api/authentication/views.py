@@ -8,14 +8,18 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
+from rest_framework.permissions import AllowAny
+
 from .serializers import UserSerializer
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login_api(request):
+    print("DEBUG: raw username/password =", repr(request.data['username']), repr(request.data['password']))
     user = get_object_or_404(User, username=request.data['username'])
     if not user.check_password(request.data['password']):
-        return Response("missing user", status=status.HTTP_404_NOT_FOUND)
+        return Response("incorrect password", status=status.HTTP_401_UNAUTHORIZED)
     token, created = Token.objects.get_or_create(user=user)
     serializer = UserSerializer(user)
     return Response({'token': token.key, 'user': serializer.data})
@@ -51,6 +55,7 @@ def get_user(request):
 
     return Response({
         'user': {
+            'id': user.id,
             'username': user.username,
             'email': user.email,
         }

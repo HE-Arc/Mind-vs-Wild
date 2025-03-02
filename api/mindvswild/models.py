@@ -17,17 +17,10 @@ class Group(models.Model):
         User, on_delete=models.CASCADE, related_name="groups_created"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    invite_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
 
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        """Génère un code d'invitation unique lors de la création du groupe"""
-        if not self.invite_code:
-            import uuid
-            self.invite_code = uuid.uuid4().hex[:10].upper()
-        super().save(*args, **kwargs)
 
 class GroupUser(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="memberships")
