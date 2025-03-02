@@ -70,7 +70,9 @@ class GroupViewSet(viewsets.ModelViewSet):
 
         # Construire l'URL d'invitation (côté frontend, par exemple)
         # On suppose que le front a une route /accept-invite/:token
-        invite_url = f"{request.scheme}://{request.get_host()}/#/accept-invite/{token}"
+        #invite_url = f"{request.scheme}://{request.get_host()}/#/accept-invite/{token}"
+        FRONT_URL = "http://localhost:5173"  # ou depuis settings
+        invite_url = f"{FRONT_URL}/groups/accept-invite/{token}"
 
         return Response({
             "invite_token": token,

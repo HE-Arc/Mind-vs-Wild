@@ -8,6 +8,7 @@ import RoomDetailView from '@/views/RoomDetailView.vue'
 import JoinRoomView from '@/views/JoinRoomView.vue'
 import GroupListView from '@/views/GroupListView.vue'
 import GroupDetailView from '@/views/GroupDetailView.vue'
+import AcceptInviteView from '@/views/AcceptInviteView.vue'
 import { isAuthenticated } from '@/utils/auth'
 
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
@@ -46,6 +47,14 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: RegisterView,
+      beforeEnter: async (to, from, next) => {
+        const isAuth = await isAuthenticated();
+        if (isAuth) {
+          next('/profile');
+        } else {
+          next();
+        }
+      }
     },
     {
       path: '/profile',
@@ -85,10 +94,9 @@ const router = createRouter({
     },
     {
 
-      path:'/accept-invite/:token',
+      path: '/groups/accept-invite/:token',
       name: 'accept-invite',
-      component: () => import('@/views/AcceptInviteView.vue'),
-      beforeEnter: requireAuth
+      component: AcceptInviteView,
     },
   ],
 })

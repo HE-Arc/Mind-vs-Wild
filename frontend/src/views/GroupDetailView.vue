@@ -70,7 +70,7 @@ const isAdmin = computed(() => {
   if (!user) return false
 
   // On check si la liste members est prête
-  
+
   return group.value.members?.some(m => m.user.id === user.id && m.is_admin)
 
 })
