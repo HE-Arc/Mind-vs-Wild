@@ -24,7 +24,7 @@ export const useGroupStore = defineStore('group', {
       this.groups.push(response.data)
       return response.data
     },
-  
+
     async inviteUser(groupId, username) {
       const token = localStorage.getItem('token')
       const url = `http://127.0.0.1:8000/api/groups/${groupId}/invite/`
@@ -59,6 +59,19 @@ export const useGroupStore = defineStore('group', {
       // await this.fetchGroups()
 
       return joinedGroup
+    },
+
+    async leaveGroup(groupId) {
+      const token = localStorage.getItem('token')
+      const url = `http://127.0.0.1:8000/api/groups/${groupId}/leave/`
+      const response = await axios.post(
+        url,
+        {},
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      return response.data
     },
   },
 })

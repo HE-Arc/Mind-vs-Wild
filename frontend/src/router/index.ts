@@ -93,6 +93,12 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
+      path: '/groups/:id/leave',
+      name: 'leave-group',
+      component: GroupDetailView,
+      beforeEnter: requireAuth
+    },
+    {
 
       path: '/groups/accept-invite/:token',
       name: 'accept-invite',

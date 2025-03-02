@@ -26,6 +26,7 @@ def login_api(request):
     
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def register_api(request):
     serializer = UserSerializer(data=request.data)
     
