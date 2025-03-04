@@ -36,10 +36,9 @@ export default defineComponent({
                     username: username.value,
                     password: password.value
                 })
-
                 const token = response.data.token
                 localStorage.setItem('token', token)
-                
+
                 router.push('/profile')
             } catch (error) {
                 errorMessage.value = (error as any).response?.data?.error || "Unknow error"
