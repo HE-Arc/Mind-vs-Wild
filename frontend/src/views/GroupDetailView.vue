@@ -81,6 +81,7 @@ onMounted(async () => {
 
 const isAdmin = computed(() => {
   const user = authStore.user
+  console.log(group.value)
   if (!user) return false
 
   // Check if user is admin of the group

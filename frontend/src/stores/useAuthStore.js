@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(username, password) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login/`, {
           username,
           password,
         })
@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
       }
       try {
         // On vérifie la validité du token via /api/auth/get/ (ou un endpoint équivalent)
-        const response = await axios.get('http://127.0.0.1:8000/api/auth/get/', {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
           headers: { Authorization: `Token ${savedToken}` },
         })
         if (response.status === 200) {

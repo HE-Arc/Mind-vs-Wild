@@ -9,7 +9,7 @@ export const useGroupStore = defineStore('group', {
   actions: {
     async fetchGroups() {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://127.0.0.1:8000/api/groups/', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/groups/`, {
         headers: { Authorization: `Token ${token}` },
       })
       this.groups = response.data
@@ -17,7 +17,7 @@ export const useGroupStore = defineStore('group', {
     async createGroup(name, description) {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/groups/',
+        `${import.meta.env.VITE_BACKEND_URL}/api/groups/`,
         { name, description },
         { headers: { Authorization: `Token ${token}` } },
       )
@@ -27,7 +27,7 @@ export const useGroupStore = defineStore('group', {
 
     async inviteUser(groupId, username) {
       const token = localStorage.getItem('token')
-      const url = `http://127.0.0.1:8000/api/groups/${groupId}/invite/`
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/groups/${groupId}/invite/`
       // body data (passe username si on veut nominatif)
       const data = {}
       if (username) {
@@ -36,13 +36,12 @@ export const useGroupStore = defineStore('group', {
       const response = await axios.post(url, data, {
         headers: { Authorization: `Token ${token}` },
       })
-      // La réponse contient { invite_token, invite_url, expires_at, ... }
       return response.data
     },
 
     async acceptInvite(inviteToken) {
       const token = localStorage.getItem('token')
-      const url = `http://127.0.0.1:8000/api/groups/accept-invite/${inviteToken}/`
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/groups/accept-invite/${inviteToken}/`
       const response = await axios.post(
         url,
         {},
@@ -63,7 +62,7 @@ export const useGroupStore = defineStore('group', {
 
     async leaveGroup(groupId) {
       const token = localStorage.getItem('token')
-      const url = `http://127.0.0.1:8000/api/groups/${groupId}/leave/`
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/groups/${groupId}/leave/`
       const response = await axios.post(
         url,
         {},

@@ -9,7 +9,7 @@ export const useRoomStore = defineStore('room', {
   actions: {
     async fetchRooms() {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://127.0.0.1:8000/api/rooms/', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/rooms/`, {
         headers: { Authorization: `Token ${token}` },
       })
       this.rooms = response.data
@@ -17,17 +17,17 @@ export const useRoomStore = defineStore('room', {
 
     async fetchRoomDetails(code) {
       const token = localStorage.getItem('token')
-      const response = await axios.get(`http://127.0.0.1:8000/api/rooms/${code}/`, {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/rooms/${code}/`, {
         headers: { Authorization: `Token ${token}` },
       })
       this.currentRoom = response.data
       return this.currentRoom
     },
-    
+
     async joinRoomByCode(code) {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/rooms/join/${code}/`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/join/${code}/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },
