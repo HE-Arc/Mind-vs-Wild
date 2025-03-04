@@ -42,7 +42,7 @@ export default defineComponent({
 
     const getUserProfile = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}//api/auth/get/`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
           headers: { Authorization: `Token ${token}` },
           withCredentials: true
         });
@@ -55,7 +55,7 @@ export default defineComponent({
     const logout = async () => {
       try {
         await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}//api/auth/logout/`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/logout/`,
           {},
           { headers: { Authorization: `Token ${token}` } }
         );
@@ -70,7 +70,7 @@ export default defineComponent({
 
     const delete_user = async () => {
       try {
-        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}//api/auth/delete/`, {
+        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/auth/delete/`, {
           headers: { Authorization: `Token ${token}` }
         });
         localStorage.removeItem('token');
@@ -92,7 +92,7 @@ export default defineComponent({
         if (user.value.email) dataToUpdate.email = user.value.email;
         if (password.value) dataToUpdate.password = password.value;
 
-        const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}//api/auth/update/`, dataToUpdate, {
+        const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/update/`, dataToUpdate, {
           headers: { Authorization: `Token ${token}` }
         });
 
