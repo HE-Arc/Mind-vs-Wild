@@ -26,13 +26,12 @@ jobs:
       - name: Deploy Django backend
         run: |
           cd /home/django/project/app/api
-          export PIPENV_VENV_IN_PROJECT=1
-          export PIPENV_IGNORE_VIRTUALENVS=1
-          pipenv --rm || true
-          pipenv --python $(which python3)
-          pipenv install --deploy --ignore-pipfile
-          pipenv run python manage.py migrate --noinput
-          pipenv run python manage.py collectstatic --noinput
+          python3 -m venv /home/django/project/app/api/venv
+          source /home/django/project/app/api/venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
 
   Deploy_Frontend:
     runs-on: self-hosted
@@ -41,7 +40,7 @@ jobs:
       - name: Deploy Quasar frontend
         run: |
           cd /home/django/project/app/frontend
-          npm i
+          npm install
           npm run build
           echo "Frontend built successfully."
 

@@ -5,20 +5,20 @@
         <q-card class="profile-card">
           <q-input rounded standout class="profile-input" v-model="user.username" bg-color="white" color="black"
             input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Change Username" @click="update_user" />
+          <q-btn rounded class="profile-btn" label="Modifier le nom d'utilisateur" @click="update_user" />
 
           <q-input rounded standout class="profile-input" v-model="user.email" bg-color="white" color="black"
             input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Change Email" @click="update_user" />
+          <q-btn rounded class="profile-btn" label="Modifier l'adresse email" @click="update_user" />
 
-          <q-input rounded standout class="profile-input" v-model="password" type="password" label="Password"
+          <q-input rounded standout class="profile-input" v-model="password" type="password" label="Modifier le mot de passe"
             bg-color="white" color="black" input-style="color: black;" />
           <q-input rounded standout class="profile-input" v-model="confirmPassword" type="password"
-            label="Confirm Password" bg-color="white" color="black" input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Change Password" @click="update_user" />
+            label="Confirmer le mot de passe" bg-color="white" color="black" input-style="color: black;" />
+          <q-btn rounded class="profile-btn" label="Modifier le mot de passe" @click="update_user" />
 
-          <q-btn rounded class="delete-btn" label="Delete Account" @click="delete_user" />
-          <q-btn rounded class="profile-btn" label="logout" @click="logout" />
+          <q-btn rounded class="delete-btn" label="Supprimer le compte" @click="delete_user" />
+          <q-btn rounded class="profile-btn" label="Se déconnecter" @click="logout" />
         </q-card>
       </q-page>
     </q-page-container>
@@ -28,6 +28,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'UserProfile',
@@ -37,10 +38,11 @@ export default defineComponent({
     const confirmPassword = ref('');
     const token = localStorage.getItem('token');
     const message = ref('');
+    const router = useRouter()
 
     const getUserProfile = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/auth/get/', {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
           headers: { Authorization: `Token ${token}` },
           withCredentials: true
         });
@@ -53,14 +55,14 @@ export default defineComponent({
     const logout = async () => {
       try {
         await axios.post(
-          'http://127.0.0.1:8000/api/auth/logout/',
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/logout/`,
           {},
           { headers: { Authorization: `Token ${token}` } }
         );
 
         localStorage.removeItem('token');
 
-        window.location.href = '/';
+        router.push('/login');
       } catch (error) {
         console.error('Logout failed:', error);
       }
@@ -68,7 +70,7 @@ export default defineComponent({
 
     const delete_user = async () => {
       try {
-        await axios.delete('http://127.0.0.1:8000/api/auth/delete/', {
+        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/auth/delete/`, {
           headers: { Authorization: `Token ${token}` }
         });
         localStorage.removeItem('token');
@@ -90,7 +92,7 @@ export default defineComponent({
         if (user.value.email) dataToUpdate.email = user.value.email;
         if (password.value) dataToUpdate.password = password.value;
 
-        const response = await axios.patch('http://127.0.0.1:8000/api/auth/update/', dataToUpdate, {
+        const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/update/`, dataToUpdate, {
           headers: { Authorization: `Token ${token}` }
         });
 
@@ -137,7 +139,7 @@ export default defineComponent({
   margin: 10px;
   width: auto;
   flex-grow: 1;
-  max-width: 250px;
+  max-width: 350px;
 }
 
 .profile-input {

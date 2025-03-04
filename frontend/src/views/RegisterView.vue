@@ -22,6 +22,8 @@
 <script>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
+
 
 export default {
   setup() {
@@ -32,23 +34,24 @@ export default {
     const password = ref('')
     const confirmPassword = ref('')
     const errorMessage = ref('')
+    const router = useRouter()
 
     const register = async () => {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register/`, {
           username: username.value,
           password: password.value,
           email: email.value,
-        })
-
-        console.log(response.data)
+        }, {
+          withCredentials: true
+        });
+        router.push('/login');
       } catch (error) {
-        errorMessage.value = error.response?.data?.error || "Unknown error"
-        console.error(errorMessage.value)
+        errorMessage.value = error.response?.data?.error || "Unknown error";
       }
     }
 
-    return { firstName, lastName, email, username, password, confirmPassword, register, errorMessage }
+    return { email, username, password, register, errorMessage }
   }
 }
 </script>

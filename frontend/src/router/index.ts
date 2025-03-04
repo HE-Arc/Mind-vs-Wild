@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue'
+import HomeView from '@/views/HomeView.vue'
+import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import RoomListView from '@/views/RoomListView.vue'
@@ -99,7 +99,6 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
-
       path: '/groups/accept-invite/:token',
       name: 'accept-invite',
       component: AcceptInviteView,

@@ -7,10 +7,10 @@ name = "pypi"
 django = "==5.1.5"
 djangorestframework = "==3.15.2"
 django-cors-headers = "*"
-python-decouple = "*"
-psycopg2 = "*"
+psycopg2-binary = "==2.9.10"
+django-environ = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.13"
+python_version = "3.12"
