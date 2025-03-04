@@ -9,7 +9,7 @@ import JoinRoomView from '@/views/JoinRoomView.vue'
 import GroupListView from '@/views/GroupListView.vue'
 import GroupDetailView from '@/views/GroupDetailView.vue'
 import AcceptInviteView from '@/views/AcceptInviteView.vue'
-import { isAuthenticated } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth.ts'
 
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
 

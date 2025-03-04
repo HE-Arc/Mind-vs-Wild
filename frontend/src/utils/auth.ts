@@ -1,7 +1,6 @@
-// src/utils/auth.js
 import axios from 'axios'
 
-export const login = async (username, password) => {
+export const login = async (username: string, password: string) => {
   try {
     const response = await axios.post(
       `${import.meta.env.VITE_BACKEND_URL}/api/auth/login/`,
