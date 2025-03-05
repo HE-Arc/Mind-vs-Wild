@@ -28,9 +28,9 @@ onMounted(() => {
 
 const room = computed(() => roomStore.currentRoom)
 
-// Quitter la room (à implémenter)
-const leaveRoom = () => {
-  $q.notify({ type: 'info', message: "La fonctionnalité 'Quitter' sera bientôt disponible" })
-  router.push('/rooms')
-}
+// TODO: Implement leaveRoom function
+// const leaveRoom = () => {
+//   $q.notify({ type: 'info', message: "La fonctionnalité 'Quitter' sera bientôt disponible" })
+//   router.push('/rooms')
+// }
 </script>

@@ -1,28 +1,24 @@
 <template>
-  <q-layout>
-    <q-page-container>
-      <q-page class="profile-page">
-        <q-card class="profile-card">
-          <q-input rounded standout class="profile-input" v-model="user.username" bg-color="white" color="black"
-            input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Modifier le nom d'utilisateur" @click="update_user" />
+  <q-page class="profile-page">
+    <q-card class="profile-card">
+      <q-input rounded standout class="profile-input" v-model="user.username" bg-color="white" color="black"
+        input-style="color: black;" />
+      <q-btn rounded class="profile-btn" label="Modifier le nom d'utilisateur" @click="update_user" />
 
-          <q-input rounded standout class="profile-input" v-model="user.email" bg-color="white" color="black"
-            input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Modifier l'adresse email" @click="update_user" />
+      <q-input rounded standout class="profile-input" v-model="user.email" bg-color="white" color="black"
+        input-style="color: black;" />
+      <q-btn rounded class="profile-btn" label="Modifier l'adresse email" @click="update_user" />
 
-          <q-input rounded standout class="profile-input" v-model="password" type="password"
-            label="Modifier le mot de passe" bg-color="white" color="black" input-style="color: black;" />
-          <q-input rounded standout class="profile-input" v-model="confirmPassword" type="password"
-            label="Confirmer le mot de passe" bg-color="white" color="black" input-style="color: black;" />
-          <q-btn rounded class="profile-btn" label="Modifier le mot de passe" @click="update_user" />
+      <q-input rounded standout class="profile-input" v-model="password" type="password"
+        label="Modifier le mot de passe" bg-color="white" color="black" input-style="color: black;" />
+      <q-input rounded standout class="profile-input" v-model="confirmPassword" type="password"
+        label="Confirmer le mot de passe" bg-color="white" color="black" input-style="color: black;" />
+      <q-btn rounded class="profile-btn" label="Modifier le mot de passe" @click="update_user" />
 
-          <q-btn rounded class="delete-btn" label="Supprimer le compte" @click="delete_user" />
-          <q-btn rounded class="profile-btn" label="Se déconnecter" @click="logout" />
-        </q-card>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+      <q-btn rounded class="delete-btn" label="Supprimer le compte" @click="delete_user" />
+      <q-btn rounded class="profile-btn" label="Se déconnecter" @click="logout" />
+    </q-card>
+  </q-page>
 </template>
 
 <script lang="ts">
@@ -140,6 +136,7 @@ export default defineComponent({
   width: auto;
   flex-grow: 1;
   max-width: 350px;
+  justify-content: space-between;
 }
 
 .profile-input {
