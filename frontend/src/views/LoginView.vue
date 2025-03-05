@@ -15,7 +15,7 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
