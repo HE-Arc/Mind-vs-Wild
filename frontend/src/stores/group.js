@@ -28,7 +28,6 @@ export const useGroupStore = defineStore('group', {
     async inviteUser(groupId, username) {
       const token = localStorage.getItem('token')
       const url = `${import.meta.env.VITE_BACKEND_URL}/api/groups/${groupId}/invite/`
-      // body data (passe username si on veut nominatif)
       const data = {}
       if (username) {
         data.username = username
@@ -49,13 +48,10 @@ export const useGroupStore = defineStore('group', {
           headers: { Authorization: `Token ${token}` },
         },
       )
-      // Le backend renvoie normalement le group (ou un message). Imaginons qu'il renvoie le group.
-      const joinedGroup = response.data
 
-      // Soit on push le group dans this.groups
+      // Add the joined group to the list of groups the user is in
+      const joinedGroup = response.data
       this.groups.push(joinedGroup)
-      // Ou on refetch tout :
-      // await this.fetchGroups()
 
       return joinedGroup
     },
