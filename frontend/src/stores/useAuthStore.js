@@ -1,12 +1,14 @@
-// useAuthStore.js
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: null,
+    token: localStorage.getItem('token') || null,
   }),
+  getters: {
+    isLoggedIn: (state) => !!state.token && !!state.user,
+  },
   actions: {
     async login(username, password) {
       try {
@@ -14,6 +16,7 @@ export const useAuthStore = defineStore('auth', {
           username,
           password,
         })
+
         if (response.status === 200) {
           this.token = response.data.token
           this.user = response.data.user
@@ -21,35 +24,42 @@ export const useAuthStore = defineStore('auth', {
           return true
         }
       } catch (err) {
-        console.error('Login error:', err)
+        console.error('Erreur lors de la connexion:', err)
         return false
       }
-    },
-    logout() {
-      this.token = null
-      this.user = null
-      localStorage.removeItem('token')
     },
 
     async restoreUser() {
       const savedToken = localStorage.getItem('token')
+
       if (!savedToken) {
+        this.user = null
+        this.token = null
         return
       }
+
       try {
-        // On vérifie la validité du token via /api/auth/get/ (ou un endpoint équivalent)
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
           headers: { Authorization: `Token ${savedToken}` },
         })
+
         if (response.status === 200) {
           this.token = savedToken
           this.user = response.data.user
+        } else {
+          this.logout()
         }
       } catch (err) {
         console.error('Erreur restoreUser:', err)
-        // Si token invalide, on le retire
-        localStorage.removeItem('token')
+        this.logout()
       }
+    },
+
+    logout() {
+      this.token = null
+      this.user = null
+      localStorage.removeItem('token')
+      window.location.href = '/login'
     },
   },
 })

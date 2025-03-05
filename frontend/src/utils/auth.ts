@@ -42,7 +42,7 @@ export const isAuthenticated = async () => {
     return response.status === 200
   } catch (error) {
     console.error('Erreur lors de la vérification du token:', error)
-    localStorage.removeItem('token') // Supprime le token s'il est invalide
+    localStorage.removeItem('token')
     return false
   }
 }
