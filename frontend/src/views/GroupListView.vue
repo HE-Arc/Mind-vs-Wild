@@ -14,7 +14,7 @@
         </div>
 
         <q-list bordered>
-          <q-item v-for="group in groups" :key="group.id" clickable @click="goToGroupDetail(group.id)">
+          <q-item v-for="group in groups" :key="group.id" clickable @click="goToGroupDetail(group.id)" class="text-black">
             <q-item-section>
               <div class="text-body1">{{ group.name }}</div>
               <div class="text-caption text-grey-7">

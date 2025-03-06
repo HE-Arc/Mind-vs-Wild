@@ -21,15 +21,15 @@
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered>
       <q-list>
         <template v-if="!isLoggedIn">
-          <q-item clickable to="/login">
+          <q-item clickable to="/login" class="text-black">
             <q-item-section>Se connecter</q-item-section>
           </q-item>
-          <q-item clickable to="/register">
+            <q-item clickable to="/register" class="text-black">
             <q-item-section>S'enregistrer</q-item-section>
           </q-item>
         </template>
         <template v-else>
-          <q-item>
+          <q-item class="text-black">
             <q-item-section avatar>
               <q-avatar>
                 <img :src="authStore.user.profilePicture" alt="Profile Picture" />
@@ -40,17 +40,17 @@
             </q-item-section>
           </q-item>
           <q-separator />
-          <q-item clickable>
+          <q-item clickable class="text-black">
             <q-item-section>Invitations</q-item-section>
           </q-item>
-          <q-item clickable>
+          <q-item clickable class="text-black">
             <q-item-section>Notifications</q-item-section>
           </q-item>
           <q-separator />
-          <q-item clickable @click="goToProfile">
+          <q-item clickable @click="goToProfile" class="text-black">
             <q-item-section>Profil</q-item-section>
           </q-item>
-          <q-item clickable @click="logout">
+          <q-item clickable @click="logout" class="text-black">
             <q-item-section>Se déconnecter</q-item-section>
           </q-item>
         </template>
