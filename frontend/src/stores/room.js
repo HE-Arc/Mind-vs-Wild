@@ -36,5 +36,18 @@ export const useRoomStore = defineStore('room', {
       this.currentRoom = response.data
       return response.data
     },
+
+    async createRoom(name, groupId) {
+      const token = localStorage.getItem('token')
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/`,
+        { name, group: groupId },
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      this.rooms.push(response.data)
+      return response.data
+    },
   },
 })
