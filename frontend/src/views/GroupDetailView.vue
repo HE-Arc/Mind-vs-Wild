@@ -58,6 +58,14 @@
           <q-btn label="Inviter" color="primary" @click="sendInvite" class="q-mt-sm" />
         </q-card-section>
       </q-card>
+
+      <q-card bordered class="q-pa-md q-mb-md">
+        <q-card-section>
+          <div class="text-subtitle1 text-primary q-mb-md">Créer une Room</div>
+          <q-input v-model="newRoomName" label="Nom de la Room" outlined dense />
+          <q-btn label="Créer" color="primary" @click="createRoom" class="q-mt-sm" />
+        </q-card-section>
+      </q-card>
     </div>
 
     <q-card bordered class="q-pa-md">
@@ -101,6 +109,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { copyToClipboard, useQuasar, Notify } from 'quasar'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useGroupStore } from '@/stores/group'
+import { useRoomStore } from '@/stores/room'
 
 const $q = useQuasar()
 Notify.setDefaults({
@@ -115,12 +124,14 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const groupStore = useGroupStore()
+const roomStore = useRoomStore()
 
 // Local state
 const group = ref({})
 const inviteUsername = ref('')
 const inviteLink = ref('')
 const confirmDialog = ref(false)
+const newRoomName = ref('')
 
 onMounted(async () => {
   await authStore.restoreUser()
@@ -179,8 +190,22 @@ function copyLink() {
   }
 }
 
+async function createRoom() {
+  if (!newRoomName.value) {
+    $q.notify({ type: 'warning', message: 'Veuillez entrer un nom de room' })
+    return
+  }
+  try {
+    await roomStore.createRoom(newRoomName.value, group.value.id)
+    $q.notify({ type: 'positive', message: 'Room créée' })
+    newRoomName.value = ''
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err?.response?.data?.detail || 'Erreur' })
+  }
+}
+
 // Redirection vers une room
-// function goToRoom(room) {
-//   router.push(`/rooms/${room.code}`)
-// }
-// </script>
+function goToRoom(room) {
+  router.push(`/rooms/${room.code}`)
+}
+</script>
