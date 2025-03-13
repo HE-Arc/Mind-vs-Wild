@@ -81,6 +81,12 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
+      path: '/rooms/:code/leave',
+      name: 'leave-room',
+      component: RoomDetailView,
+      beforeEnter: requireAuth
+    },
+    {
       path: '/groups',
       name: 'groups',
       component: GroupListView,

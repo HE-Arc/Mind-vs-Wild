@@ -22,10 +22,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router' // Import useRouter
 import { useRoomStore } from '@/stores/room'
 
 const route = useRoute()
+const router = useRouter() // Initialize router
 const roomStore = useRoomStore()
 
 const room = ref(null)
@@ -35,9 +36,8 @@ onMounted(async () => {
   room.value = await roomStore.fetchRoomDetails(code)
 })
 
-// TODO: Implement leaveRoom function
-// const leaveRoom = () => {
-//   $q.notify({ type: 'info', message: "La fonctionnalité 'Quitter' sera bientôt disponible" })
-//   router.push('/rooms')
-// }
+const leaveRoom = async () => {
+  await roomStore.leaveRoom()
+  router.push('/rooms') // Use router to navigate
+}
 </script>
