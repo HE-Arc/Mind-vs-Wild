@@ -119,21 +119,25 @@ class RoomViewSet(viewsets.ModelViewSet):
     lookup_field = 'code'  # Use the code instead of the id
 
     def get_queryset(self):
-        """Limit to rooms of groups where the user is a member."""
+        """Limit to rooms of groups where the user is a member and public rooms."""
         user = self.request.user
-        return Room.objects.filter(group__memberships__user=user).distinct()
-
-    def perform_create(self, serializer):
-        """Create a room linked to a group"""
-        group_id = self.request.data.get('group')
-        group = get_object_or_404(Group, id=group_id)
-
-        # Check if the user is a member of the group
-        if not group.memberships.filter(user=self.request.user).exists():
-            return Response({"detail": "Vous n'êtes pas membre du groupe."}, status=status.HTTP_403_FORBIDDEN)
+        return Room.objects.filter(
+            group__memberships__user=user
+        ) | Room.objects.filter(group__isnull=True)
         
-        # Create the room
-        room = serializer.save(group=group, created_by=self.request.user)
+    def perform_create(self, serializer):
+        """Create a room linked to a group or as a public room"""
+        group_id = self.request.data.get('group')
+        if group_id:
+            group = get_object_or_404(Group, id=group_id)
+            # Check if the user is a member of the group
+            if not group.memberships.filter(user=self.request.user).exists():
+                return Response({"detail": "Vous n'êtes pas membre du groupe."}, status=status.HTTP_403_FORBIDDEN)
+            # Create the room linked to the group
+            room = serializer.save(group=group, created_by=self.request.user)
+        else:
+            # Create a public room
+            room = serializer.save(created_by=self.request.user)
         
         # Add the creator as a participant
         RoomUser.objects.create(room=room, user=self.request.user)
