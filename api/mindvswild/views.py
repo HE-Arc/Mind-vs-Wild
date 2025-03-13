@@ -150,6 +150,27 @@ class RoomViewSet(viewsets.ModelViewSet):
         RoomUser.objects.get_or_create(room=room, user=request.user)
         return Response({"detail": "Vous avez rejoint la salle."}, status=status.HTTP_200_OK)
     
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def leave(self, request, code=None):
+        """Leave a room"""
+        room = get_object_or_404(Room, code=code)
+        user = request.user
+
+        # Check if the user is a member of the room
+        participation = RoomUser.objects.filter(room=room, user=user).first()
+        if not participation:
+            return Response({"detail": "Vous n'êtes pas membre de la salle."}, status=status.HTTP_403_FORBIDDEN)
+
+        # If the user is the creator, delete the room
+        if room.created_by == user:
+            with transaction.atomic():
+                room.delete()
+                return Response({"detail": "Salle supprimée."}, status=status.HTTP_200_OK)
+
+        # If the user is not the creator, they can leave the room
+        participation.delete()
+        return Response({"detail": "Vous avez quitté la salle."}, status=status.HTTP_200_OK)
+    
 class AcceptInviteAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

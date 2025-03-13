@@ -49,5 +49,17 @@ export const useRoomStore = defineStore('room', {
       this.rooms.push(response.data)
       return response.data
     },
+
+    async leaveRoom() {
+      const token = localStorage.getItem('token')
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${this.currentRoom.code}/leave/`,
+        {},
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      this.currentRoom = null
+    },
   },
 })
