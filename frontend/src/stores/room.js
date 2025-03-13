@@ -37,7 +37,7 @@ export const useRoomStore = defineStore('room', {
       return response.data
     },
 
-    async createRoom(name, groupId) {
+    async createRoom(name, groupId = null) {
       const token = localStorage.getItem('token')
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/rooms/`,
