@@ -27,13 +27,13 @@ export const useRoomStore = defineStore('room', {
     async joinRoomByCode(code) {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/join/${code}/`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${code}/join/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },
         },
       )
-      this.currentRoom = response.data
+      this.currentRoom = response.data.room
       return response.data
     },
 

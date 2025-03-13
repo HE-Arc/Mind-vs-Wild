@@ -141,6 +141,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         
         # Add the creator as a participant
         RoomUser.objects.create(room=room, user=self.request.user)
+        
+        # Return the created room's details
+        return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def join(self, request, code=None):
@@ -152,7 +155,10 @@ class RoomViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Vous n'êtes pas membre du groupe."}, status=status.HTTP_403_FORBIDDEN)
         # Add the user to the room
         RoomUser.objects.get_or_create(room=room, user=request.user)
-        return Response({"detail": "Vous avez rejoint la salle."}, status=status.HTTP_200_OK)
+        return Response({
+            "detail": "Vous avez rejoint la salle.",
+            "room": RoomSerializer(room).data
+        }, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def leave(self, request, code=None):

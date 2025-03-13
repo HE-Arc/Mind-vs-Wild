@@ -25,8 +25,8 @@
     </div>
     <q-btn label="Créer une Room" color="primary" class="q-mt-md" @click="createPublicRoom" />
     <h3 class="q-mt-md">Rejoindre une Room</h3>
-    <q-input v-model="joinCode" label="Code de la Room" outlined dense @keyup.enter="joinRoomByCode" />
-    <q-btn label="Rejoindre" color="primary" class="q-mt-md" @click="joinRoomByCode" />
+    <q-input v-model="joinCode" label="Code de la Room" outlined dense @keyup.enter="joinRoom(joinCode)" />
+    <q-btn label="Rejoindre" color="primary" class="q-mt-md" @click="joinRoom(joinCode)" />
 
     <q-banner v-if="message" class="q-mt-md"
       :class="{ 'bg-positive text-white': success, 'bg-negative text-white': !success }">
@@ -70,8 +70,9 @@ const joinRoom = async (code) => {
     return
   }
   try {
-    const room = await roomStore.joinRoomByCode(joinCode.value)
-    message.value = `Vous avez rejoint la room : ${room.name}`
+    const response = await roomStore.joinRoomByCode(code)
+    const room = response.room
+    message.value = response.detail
     success.value = true
     setTimeout(() => {
       router.push(`/rooms/${room.code}`)
@@ -81,9 +82,5 @@ const joinRoom = async (code) => {
     message.value = "Impossible de rejoindre cette room."
     success.value = false
   }
-}
-
-const joinRoom = (room) => {
-  router.push(`/rooms/${room.code}`)
 }
 </script>
