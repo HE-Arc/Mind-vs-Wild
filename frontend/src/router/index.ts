@@ -69,9 +69,9 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
-      path: '/rooms/join',
+      path: '/rooms/:code/join',
       name: 'join-room',
-      component: JoinRoomView,
+      component: RoomDetailView,
       beforeEnter: requireAuth
     },
     {
@@ -83,7 +83,7 @@ const router = createRouter({
     {
       path: '/rooms/:code/leave',
       name: 'leave-room',
-      component: RoomDetailView,
+      component: RoomListView,
       beforeEnter: requireAuth
     },
     {

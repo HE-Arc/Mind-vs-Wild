@@ -196,7 +196,7 @@ async function createRoom() {
     return
   }
   try {
-    await roomStore.createRoom(newRoomName.value, group.value.id)
+    const room = await roomStore.createRoom(newRoomName.value, group.value.id)
     $q.notify({ type: 'positive', message: 'Room créée' })
     router.push(`/rooms/${room.code}`)
   } catch (err) {
