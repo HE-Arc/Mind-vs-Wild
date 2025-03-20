@@ -9,6 +9,7 @@ import JoinRoomView from '@/views/JoinRoomView.vue'
 import GroupListView from '@/views/GroupListView.vue'
 import GroupDetailView from '@/views/GroupDetailView.vue'
 import AcceptInviteView from '@/views/AcceptInviteView.vue'
+import QuizView from '@/views/QuizView.vue'
 import { isAuthenticated } from '@/utils/auth.ts'
 
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
@@ -102,6 +103,12 @@ const router = createRouter({
       path: '/groups/accept-invite/:token',
       name: 'accept-invite',
       component: AcceptInviteView,
+    },
+    {
+
+      path: '/quiz',
+      name: 'quiz',
+      component: QuizView,
     },
   ],
 })
