@@ -72,11 +72,11 @@
       <q-card-section>
         <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
         <q-list bordered separator>
-          {{ group }}
           <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
             <q-item-section>
               <div class="text-bold">{{ room.name }}</div>
-              <div class="text-subtitle2 text-grey">Code: {{ room.code }}</div>
+              <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
+              <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
             </q-item-section>
             <q-item-section side>
               <q-icon name="arrow_forward" />
@@ -139,6 +139,12 @@ onMounted(async () => {
   await groupStore.fetchGroups()
   const id = route.params.id
   group.value = groupStore.groups.find(g => g.id == id)
+  if (group.value) {
+    await roomStore.fetchRooms()
+    group.value.rooms = roomStore.rooms.filter(room => room.group === group.value.id)
+    console.log(roomStore.rooms.filter(room => room.group === group.value.id))
+    console.log(roomStore.rooms)
+  }
 })
 
 const isAdmin = computed(() => {
