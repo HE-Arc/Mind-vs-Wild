@@ -28,4 +28,5 @@ urlpatterns = [
     path('api/auth/', include('authentication.urls')), 
     path('api/', include(router.urls)),
     path('api/groups/accept-invite/<str:token>/', AcceptInviteAPIView.as_view(), name='accept-invite'),
+    path('api/', include("quiz.urls")),
 ]
