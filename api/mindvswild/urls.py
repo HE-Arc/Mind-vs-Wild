@@ -30,4 +30,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authentication.urls')),
     path('api/', include(router.urls)),
+    path('api/', include("quiz.urls")),
 ]

@@ -110,12 +110,7 @@ const router = createRouter({
       name: 'accept-invite',
       component: AcceptInviteView,
     },
-    {
-
-      path: '/quiz',
-      name: 'quiz',
-      component: QuizView,
-    },
+    { path: "/quiz", name: "quiz", component: QuizView },
   ],
 })
 
