@@ -12,39 +12,127 @@
             </q-card-section>
         </q-card>
 
-        <q-card>
+        <div v-if="lastResult" class="result-message"
+            :class="{ 'correct': lastResult === 'correct', 'incorrect': lastResult === 'incorrect' }">
+            <span v-if="lastResult === 'correct'">Bonne réponse !</span>
+            <span v-else>Réponse incorrecte. La bonne réponse est {{ correctAnswer }}.</span>
+        </div>
+
+        <q-card v-if="currentQuestion">
             <q-card-section class="q-pa-none card-question">
-                Quelle est la capitale du japon?
+                {{ currentQuestion.question }}
             </q-card-section>
         </q-card>
-        <div class="answer">
+
+        <div v-if="currentQuestion" class="answer">
             <div class="column left-column">
-                <q-card class="card-spacing">
+                <q-card v-for="answer in leftAnswers" :key="answer.key" class="card-spacing" :class="{
+                    'correct-answer': answer.key === correctAnswer,
+                    'wrong-answer': lastResult === 'incorrect' && selectedAnswer === answer.key
+                }" @click="selectAnswer(currentQuestion.id, answer.key, answer.text)">
                     <q-card-section class="q-pa-none card-answer">
-                        Kyoto
-                    </q-card-section>
-                </q-card>
-                <q-card class="card-spacing">
-                    <q-card-section class="q-pa-none card-answer">
-                        Tokyo
+                        {{ answer.text }}
                     </q-card-section>
                 </q-card>
             </div>
             <div class="column right-column">
-                <q-card class="card-spacing">
+                <q-card v-for="answer in rightAnswers" :key="answer.key" class="card-spacing" :class="{
+                    'correct-answer': lastResult === 'correct' && answer.key === correctAnswer,
+                    'wrong-answer': lastResult === 'incorrect' && selectedAnswer === answer.key
+                }" @click="selectAnswer(currentQuestion.id, answer.key, answer.text)">
                     <q-card-section class="q-pa-none card-answer">
-                        Osaka
-                    </q-card-section>
-                </q-card>
-                <q-card class="card-spacing">
-                    <q-card-section class="q-pa-none card-answer">
-                        Nagoya
+                        {{ answer.text }}
                     </q-card-section>
                 </q-card>
             </div>
         </div>
     </q-page>
 </template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const socketUrl = 'ws://127.0.0.1:8000/ws/quiz/';
+let socket = null;
+
+const currentQuestion = ref(null);
+const error = ref(null);
+const lastResult = ref(null);
+const correctAnswer = ref(null);
+const selectedAnswer = ref(null);
+
+function connectWebSocket() {
+    socket = new WebSocket(socketUrl);
+
+    socket.onopen = () => {
+        console.log('WebSocket connecté');
+        fetchQuiz();
+    };
+
+    socket.onerror = (err) => {
+        console.error('Erreur WebSocket', err);
+        error.value = 'Connexion WebSocket échouée';
+    };
+
+    socket.onclose = () => {
+        console.log('WebSocket déconnecté');
+    };
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Reçu:', data);
+
+        if (data.error) {
+            error.value = data.error;
+        } else if (data.question) {
+            currentQuestion.value = data.question;
+            lastResult.value = null;
+            correctAnswer.value = null;
+            selectedAnswer.value = null;
+        } else if (data.result) {
+            lastResult.value = data.result;
+            correctAnswer.value = data.correct_answer;
+        }
+    };
+}
+
+function fetchQuiz() {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ action: 'fetch_quiz' }));
+    }
+}
+
+function selectAnswer(quizId, answerKey, answerText) {
+    if (selectedAnswer.value !== null) {
+        return;
+    }
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        selectedAnswer.value = answerKey;
+        socket.send(
+            JSON.stringify({
+                action: 'submit_answer',
+                quizId,
+                answerKey,
+                answerText
+            })
+        );
+    }
+}
+
+const leftAnswers = computed(() => currentQuestion.value?.answers?.slice(0, 2) || []);
+const rightAnswers = computed(() => currentQuestion.value?.answers?.slice(2, 4) || []);
+
+onMounted(() => {
+    connectWebSocket();
+});
+
+onUnmounted(() => {
+    if (socket) {
+        socket.close();
+    }
+});
+</script>
 
 <style scoped>
 .q-page {
@@ -64,7 +152,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #3F6182;
+    background-color: #3f6182;
     padding: 10px;
     border-radius: 5px;
     color: white;
@@ -75,7 +163,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    background-color: #3F6182;
+    background-color: #3f6182;
     color: white;
     padding: 10px;
     border-radius: 5px;
@@ -83,14 +171,6 @@
     align-items: center;
     justify-content: center;
     width: auto;
-}
-
-.timer-icon {
-    margin-right: 5px;
-}
-
-.player-icon {
-    margin-right: 5px;
 }
 
 .answer {
@@ -106,7 +186,7 @@
 }
 
 .card-answer {
-    background-color: #3F6182;
+    background-color: #3f6182;
     width: 100%;
     padding: 16px;
     cursor: pointer;
@@ -114,7 +194,7 @@
 }
 
 .card-question {
-    background-color: #3F6182;
+    background-color: #3f6182;
     width: 100%;
     padding: 16px;
     text-align: center;
@@ -125,11 +205,17 @@
     margin-bottom: 10px;
 }
 
-@media (min-width: 768px) {
-    .q-page {
-        height: 75vh;
-    }
+.correct-answer {
+    background-color: #4caf50 !important;
+    color: white;
+}
 
+.wrong-answer {
+    background-color: #f44336 !important;
+    color: white;
+}
+
+@media (min-width: 768px) {
     .answer {
         flex-direction: row;
         justify-content: space-between;
@@ -141,153 +227,5 @@
         margin-bottom: 0;
         padding: 10px;
     }
-
-    .left-column {
-        background-color: #EE7154;
-    }
-
-    .right-column {
-        background-color: #EE7154;
-    }
-}
-</style>
-  <q-page class="q-pa-md">
-    <h2>Quiz via WebSocket + API Externe</h2>
-
-    <!-- Affichage des éventuelles erreurs (API ou WS) -->
-    <q-banner v-if="error" class="bg-negative text-white q-mb-md">
-      {{ error }}
-    </q-banner>
-
-    <!-- Affichage du résultat de la dernière réponse -->
-    <q-banner v-if="lastResult"
-      :class="{ 'bg-positive': lastResult === 'correct', 'bg-negative': lastResult === 'incorrect' }"
-      class="text-white q-mb-md">
-      Votre dernière réponse est {{ lastResult === 'correct' ? 'CORRECTE' : 'INCORRECTE' }}
-      <span v-if="correctAnswer">
-        (Bonne réponse : {{ correctAnswer }})
-      </span>
-    </q-banner>
-
-    <!-- Affichage de la question courante -->
-    <div v-if="currentQuestion">
-      <q-card class="q-pa-md q-mb-md bg-dark text-white">
-      <q-card-section>
-        <p class="text-bold">Question : {{ currentQuestion.question }}</p>
-        <p>Catégorie : {{ category }}</p>
-        <p>Difficulté : {{ difficulty }}</p>
-      </q-card-section>
-      <q-card-section>
-        <q-list bordered>
-        <q-item v-for="(answer, index) in currentQuestion.answers" :key="answer.key" clickable
-          @click="selectAnswer(currentQuestion.id, answer.key, answer.text)" class="text-white">
-          <q-item-section>
-          {{ answer.key }} - {{ answer.text }}
-          </q-item-section>
-        </q-item>
-        </q-list>
-      </q-card-section>
-      </q-card>
-    </div>
-
-    <!-- Bouton pour demander une nouvelle question (on peut le faire après la réponse) -->
-    <q-btn label="Nouvelle question" color="primary" @click="fetchQuiz" />
-
-  </q-page>
-</template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-
-const socketUrl = 'ws://127.0.0.1:8000/ws/quiz/'; // => re_path(r'^ws/quiz/$', ...)
-
-let socket = null;
-const error = ref(null);
-
-// Question courante
-const currentQuestion = ref(null);
-const difficulty = ref('');
-const category = ref('');
-
-// Résultat de la dernière réponse
-const lastResult = ref(null);
-const correctAnswer = ref(null);
-
-function connectWebSocket() {
-  socket = new WebSocket(socketUrl);
-
-  socket.onopen = () => {
-    console.log('WebSocket connecté');
-    // On peut fetch la première question immédiatement
-    fetchQuiz();
-  };
-
-  socket.onerror = (err) => {
-    console.error('Erreur WebSocket', err);
-    error.value = 'Connexion WebSocket échouée';
-  };
-
-  socket.onclose = () => {
-    console.log('WebSocket déconnecté');
-  };
-
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log('Reçu:', data);
-
-    if (data.error) {
-      error.value = data.error;
-    }
-    else if (data.question) {
-      // Une nouvelle question
-      currentQuestion.value = data.question;
-      difficulty.value = data.difficulty || '';
-      category.value = data.category || '';
-      // On reset le résultat précédent
-      lastResult.value = null;
-      correctAnswer.value = null;
-    }
-    else if (data.result) {
-      // On a reçu le verdict sur la dernière réponse
-      lastResult.value = data.result; // "correct" ou "incorrect"
-      correctAnswer.value = data.correct_answer; // ex: "Paris"
-    }
-  };
-}
-
-// Envoyer l'action "fetch_quiz" au serveur
-function fetchQuiz() {
-  if (!socket || socket.readyState !== WebSocket.OPEN) {
-    console.log("WebSocket non ouvert !");
-    return;
-  }
-  socket.send(JSON.stringify({ action: 'fetch_quiz' }));
-}
-
-// Envoyer la réponse choisie
-function selectAnswer(quizId, answerKey, answerText) {
-  console.log(`Réponse envoyée pour quiz ${quizId}: key=${answerKey} text=${answerText}`);
-  socket.send(JSON.stringify({
-    action: 'submit_answer',
-    quizId,
-    answerKey,
-    answerText
-  }));
-}
-
-onMounted(() => {
-  connectWebSocket();
-});
-
-onUnmounted(() => {
-  if (socket) {
-    socket.close();
-  }
-});
-</script>
-
-<style scoped>
-.text-bold {
-  font-weight: bold;
 }
 </style>
