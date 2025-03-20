@@ -27,11 +27,6 @@
     <h3 class="q-mt-md">Rejoindre une Room</h3>
     <q-input v-model="joinCode" label="Code de la Room" outlined dense @keyup.enter="joinRoom(joinCode)" />
     <q-btn label="Rejoindre" color="primary" class="q-mt-md" @click="joinRoom(joinCode)" />
-
-    <q-banner v-if="message" class="q-mt-md"
-      :class="{ 'bg-positive text-white': success, 'bg-negative text-white': !success }">
-      {{ message }}
-    </q-banner>
   </q-page>
 </template>
 
@@ -39,13 +34,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoomStore } from '@/stores/room'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const roomStore = useRoomStore()
 const router = useRouter()
 const rooms = ref([])
 const joinCode = ref('')
 const message = ref('')
-const success = ref(false)
+const $q = useQuasar()
 
 onMounted(async () => {
   await roomStore.fetchRooms()
@@ -66,21 +62,21 @@ const createPublicRoom = async () => {
 const joinRoom = async (code) => {
   if (!code || code === '') {
     message.value = "Veuillez entrer un code de room."
-    success.value = false
+    $q.notify({ type: 'negative', message: 'Veuillez entrer un code de room.' })
     return
   }
   try {
     const response = await roomStore.joinRoomByCode(code)
     const room = response.room
-    message.value = response.detail
-    success.value = true
-    setTimeout(() => {
-      router.push(`/rooms/${room.code}`)
-    }, 1000)
+    router.push({
+      path: `/rooms/${room.code}`,
+      query: {
+        message: response.detail,
+      }
+    })
   } catch (error) {
     console.error("Erreur lors de la jointure :", error)
-    message.value = "Impossible de rejoindre cette room."
-    success.value = false
+    $q.notify({ type: 'negative', message: 'Impossible de rejoindre cette room.' })
   }
 }
 </script>

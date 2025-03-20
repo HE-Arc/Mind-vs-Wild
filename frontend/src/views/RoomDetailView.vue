@@ -22,22 +22,28 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router' // Import useRouter
+import { useRoute, useRouter } from 'vue-router'
 import { useRoomStore } from '@/stores/room'
+import { useQuasar } from 'quasar'
 
 const route = useRoute()
-const router = useRouter() // Initialize router
+const router = useRouter()
 const roomStore = useRoomStore()
+const $q = useQuasar()
 
 const room = ref(null)
+const message = ref(route.query.message || '')
 
 onMounted(async () => {
   const code = route.params.code
   room.value = await roomStore.fetchRoomDetails(code)
+  if(message.value) {
+    $q.notify({ type: 'positive', message: message.value })
+  }
 })
 
 const leaveRoom = async () => {
   await roomStore.leaveRoom()
-  router.push('/rooms') // Use router to navigate
+  router.push('/rooms')
 }
 </script>
