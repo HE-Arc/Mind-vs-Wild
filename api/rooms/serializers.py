@@ -19,7 +19,6 @@ class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = [
-            'id', 'name', 'group', 'created_by', 'created_at',
-            'code', 'participants', 'is_active'
+            'id', 'name', 'group', 'created_by', 'created_at', 'participants', 'is_active'
         ]
-        read_only_fields = ['code', 'created_by', 'created_at', 'participants']
+        read_only_fields = ['created_by', 'created_at', 'participants']
