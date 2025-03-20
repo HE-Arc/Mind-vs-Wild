@@ -9,21 +9,21 @@
       <q-card-section>
         <div class="text-subtitle1 text-primary q-mb-xs">Infos du Groupe</div>
         <div class="q-mb-sm">
-          <strong class="text-black">Description:</strong> <span class="text-black">{{ group.description }}</span>
+          <strong>Description:</strong> {{ group.description }}
         </div>
         <div class="q-mb-sm">
-            <strong class="text-black">Créé par:</strong> <span class="text-black">{{ group.created_by }}</span>
+          <strong>Créé par:</strong> {{ group.created_by }}
         </div>
         <div class="q-mb-md">
-          <strong class="text-black">Membres ({{ group.members?.length || 0 }}):</strong>
+          <strong>Membres ({{ group.members?.length || 0 }}):</strong>
         </div>
 
         <q-list bordered separator class="rounded-borders q-mb-sm">
-          <q-item v-for="member in group.members || []" :key="member.user.id" > 
+          <q-item v-for="member in group.members || []" :key="member.user.id">
             <q-item-section avatar>
               <q-avatar icon="person" color="primary" />
             </q-item-section>
-            <q-item-section class="text-black">{{ member.user.username }}</q-item-section>
+            <q-item-section>{{ member.user.username }}</q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
@@ -40,7 +40,7 @@
 
           <div class="q-mb-md">
             <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm" />
-            <strong class="text-black">Invitation Générique :</strong>
+            <strong>Invitation Générique :</strong>
           </div>
           <q-btn label="Générer un lien" color="secondary" @click="generateLink" />
           <div v-if="inviteLink" class="q-mt-sm">
@@ -52,10 +52,18 @@
 
           <div class="q-mb-md">
             <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm" />
-            <strong class="text-black">Invitation Nominative :</strong>
+            <strong>Invitation Nominative :</strong>
           </div>
           <q-input v-model="inviteUsername" label="Nom d'utilisateur" outlined dense />
           <q-btn label="Inviter" color="primary" @click="sendInvite" class="q-mt-sm" />
+        </q-card-section>
+      </q-card>
+
+      <q-card bordered class="q-pa-md q-mb-md">
+        <q-card-section>
+          <div class="text-subtitle1 text-primary q-mb-md">Créer une Room</div>
+          <q-input v-model="newRoomName" label="Nom de la Room" outlined dense />
+          <q-btn label="Créer" color="primary" @click="createRoom" class="q-mt-sm" />
         </q-card-section>
       </q-card>
     </div>
@@ -64,6 +72,7 @@
       <q-card-section>
         <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
         <q-list bordered separator>
+          {{ group }}
           <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
             <q-item-section>
               <div class="text-bold">{{ room.name }}</div>
@@ -101,6 +110,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { copyToClipboard, useQuasar, Notify } from 'quasar'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useGroupStore } from '@/stores/group'
+import { useRoomStore } from '@/stores/room'
 
 const $q = useQuasar()
 Notify.setDefaults({
@@ -115,12 +125,14 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const groupStore = useGroupStore()
+const roomStore = useRoomStore()
 
 // Local state
 const group = ref({})
 const inviteUsername = ref('')
 const inviteLink = ref('')
 const confirmDialog = ref(false)
+const newRoomName = ref('')
 
 onMounted(async () => {
   await authStore.restoreUser()
@@ -179,8 +191,22 @@ function copyLink() {
   }
 }
 
+async function createRoom() {
+  if (!newRoomName.value) {
+    $q.notify({ type: 'warning', message: 'Veuillez entrer un nom de room' })
+    return
+  }
+  try {
+    const room = await roomStore.createRoom(newRoomName.value, group.value.id)
+    $q.notify({ type: 'positive', message: 'Room créée' })
+    router.push(`/rooms/${room.code}`)
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err?.response?.data?.detail || 'Erreur' })
+  }
+}
+
 // Redirection vers une room
-// function goToRoom(room) {
-//   router.push(`/rooms/${room.code}`)
-// }
-// </script>
+function goToRoom(room) {
+  router.push(`/rooms/${room.code}`)
+}
+</script>
