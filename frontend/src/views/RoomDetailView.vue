@@ -3,7 +3,7 @@
     <div v-if="room">
       <div class="text-center q-mb-md">
         <h2 class="text-h5 text-white text-bold q-ma-none">{{ room.name }}</h2>
-        <div class="text-subtitle2 text-grey-7">Code: {{ room.code }}</div>
+        <div class="text-subtitle2 text-grey-7">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
       </div>
       <h3>Participants ({{ room.participants.length }})</h3>
       <ul>

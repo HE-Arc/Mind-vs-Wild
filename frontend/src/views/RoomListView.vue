@@ -6,7 +6,8 @@
         <q-item v-for="room in publicRooms" :key="room.id" clickable @click="joinRoom(room.code)">
           <q-item-section>
             <div>{{ room.name }}</div>
-            <div class="text-subtitle2 text-grey">Code : {{ room.code }}</div>
+            <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
+            <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
           </q-item-section>
         </q-item>
       </q-list>
@@ -15,7 +16,8 @@
         <q-item v-for="room in groupRooms" :key="room.id" clickable @click="joinRoom(room.code)">
           <q-item-section>
             <div>{{ room.name }}</div>
-            <div class="text-subtitle2 text-grey">Code : {{ room.code }}</div>
+            <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
+            <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
           </q-item-section>
         </q-item>
       </q-list>
