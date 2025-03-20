@@ -3,7 +3,7 @@
     <div v-if="rooms.length">
       <h2>Rooms publiques</h2>
       <q-list bordered separator>
-        <q-item v-for="room in publicRooms" :key="room.id" clickable @click="joinRoom(room.code)">
+        <q-item v-for="room in publicRooms" :key="room.id" clickable @click="joinRoom(room.id)">
           <q-item-section>
             <div>{{ room.name }}</div>
             <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
@@ -13,7 +13,7 @@
       </q-list>
       <h2>Rooms de groupes</h2>
       <q-list bordered separator>
-        <q-item v-for="room in groupRooms" :key="room.id" clickable @click="joinRoom(room.code)">
+        <q-item v-for="room in groupRooms" :key="room.id" clickable @click="joinRoom(room.id)">
           <q-item-section>
             <div>{{ room.name }}</div>
             <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
@@ -26,9 +26,6 @@
       <p>Aucune room disponible</p>
     </div>
     <q-btn label="Créer une Room" color="primary" class="q-mt-md" @click="createPublicRoom" />
-    <h3 class="q-mt-md">Rejoindre une Room</h3>
-    <q-input v-model="joinCode" label="Code de la Room" outlined dense @keyup.enter="joinRoom(joinCode)" />
-    <q-btn label="Rejoindre" color="primary" class="q-mt-md" @click="joinRoom(joinCode)" />
   </q-page>
 </template>
 
@@ -41,7 +38,6 @@ import { useQuasar } from 'quasar'
 const roomStore = useRoomStore()
 const router = useRouter()
 const rooms = ref([])
-const joinCode = ref('')
 const message = ref('')
 const $q = useQuasar()
 
@@ -57,21 +53,16 @@ const createPublicRoom = async () => {
   const name = prompt('Enter room name:')
   if (name) {
     const room = await roomStore.createRoom(name)
-    router.push(`/rooms/${room.code}`)
+    router.push(`/rooms/${room.id}`)
   }
 }
 
-const joinRoom = async (code) => {
-  if (!code || code === '') {
-    message.value = "Veuillez entrer un code de room."
-    $q.notify({ type: 'negative', message: 'Veuillez entrer un code de room.' })
-    return
-  }
+const joinRoom = async (id) => {
   try {
-    const response = await roomStore.joinRoomByCode(code)
+    const response = await roomStore.joinRoom(id)
     const room = response.room
     router.push({
-      path: `/rooms/${room.code}`,
+      path: `/rooms/${room.id}`,
       query: {
         message: response.detail,
       }

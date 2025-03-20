@@ -142,8 +142,6 @@ onMounted(async () => {
   if (group.value) {
     await roomStore.fetchRooms()
     group.value.rooms = roomStore.rooms.filter(room => room.group === group.value.id)
-    console.log(roomStore.rooms.filter(room => room.group === group.value.id))
-    console.log(roomStore.rooms)
   }
 })
 
@@ -205,7 +203,7 @@ async function createRoom() {
   try {
     const room = await roomStore.createRoom(newRoomName.value, group.value.id)
     $q.notify({ type: 'positive', message: 'Room créée' })
-    router.push(`/rooms/${room.code}`)
+    router.push(`/rooms/${room.id}`)
   } catch (err) {
     $q.notify({ type: 'negative', message: err?.response?.data?.detail || 'Erreur' })
   }
@@ -213,6 +211,6 @@ async function createRoom() {
 
 // Redirection vers une room
 function goToRoom(room) {
-  router.push(`/rooms/${room.code}`)
+  router.push(`/rooms/${room.id}`)
 }
 </script>

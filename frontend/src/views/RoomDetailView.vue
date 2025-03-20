@@ -35,8 +35,8 @@ const room = ref(null)
 const message = ref(route.query.message || '')
 
 onMounted(async () => {
-  const code = route.params.code
-  room.value = await roomStore.fetchRoomDetails(code)
+  const id = route.params.id
+  room.value = await roomStore.fetchRoomDetails(id)
   if(message.value) {
     $q.notify({ type: 'positive', message: message.value })
   }

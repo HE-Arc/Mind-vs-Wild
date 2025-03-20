@@ -5,7 +5,6 @@ import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import RoomListView from '@/views/RoomListView.vue'
 import RoomDetailView from '@/views/RoomDetailView.vue'
-import JoinRoomView from '@/views/JoinRoomView.vue'
 import GroupListView from '@/views/GroupListView.vue'
 import GroupDetailView from '@/views/GroupDetailView.vue'
 import AcceptInviteView from '@/views/AcceptInviteView.vue'
@@ -69,19 +68,19 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
-      path: '/rooms/:code/join',
+      path: '/rooms/:id/join',
       name: 'join-room',
       component: RoomDetailView,
       beforeEnter: requireAuth
     },
     {
-      path: '/rooms/:code',
+      path: '/rooms/:id',
       name: 'room-detail',
       component: RoomDetailView,
       beforeEnter: requireAuth
     },
     {
-      path: '/rooms/:code/leave',
+      path: '/rooms/:id/leave',
       name: 'leave-room',
       component: RoomListView,
       beforeEnter: requireAuth
