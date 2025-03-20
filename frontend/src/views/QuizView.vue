@@ -1,12 +1,10 @@
 <template>
     <q-page class="q-page">
-        <!-- Header avec l'icône -->
         <div class="header">
             <q-icon name="person" class="player-icon" />
             <span class="player-count">1 joueur</span>
         </div>
 
-        <!-- Timer en haut à droite -->
         <q-card class="timer-card">
             <q-card-section class="q-pa-none timer-text">
                 <q-icon name="hourglass_empty" class="timer-icon" />
@@ -54,7 +52,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 75vh;
+    height: auto;
+    padding: 20px;
     position: relative;
 }
 
@@ -63,12 +62,13 @@
     top: 10px;
     left: 10px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     background-color: #3F6182;
-    padding: 5px 10px;
+    padding: 10px;
     border-radius: 5px;
     color: white;
+    width: auto;
 }
 
 .timer-card {
@@ -77,11 +77,12 @@
     right: 10px;
     background-color: #3F6182;
     color: white;
-    padding: 5px 10px;
+    padding: 10px;
     border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: auto;
 }
 
 .timer-icon {
@@ -94,44 +95,58 @@
 
 .answer {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     width: 100%;
-    justify-content: space-between;
     margin-top: 20px;
-    padding: 0 20px;   
 }
 
 .column {
-    flex: 1;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.left-column {
-    background-color: #EE7154;
-}
-
-.right-column {
-    background-color: #EE7154;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 .card-answer {
     background-color: #3F6182;
     width: 100%;
-    height: 100%;
     padding: 16px;
     cursor: pointer;
+    text-align: center;
 }
 
 .card-question {
     background-color: #3F6182;
     width: 100%;
-    height: 100%;
     padding: 16px;
+    text-align: center;
 }
 
 .card-spacing {
     margin-bottom: 10px;
-    margin-top: 10px;
+}
+
+@media (min-width: 768px) {
+    .q-page {
+        height: 75vh;
+    }
+
+    .answer {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0 20px;
+    }
+
+    .column {
+        flex: 1;
+        margin-bottom: 0;
+        padding: 10px;
+    }
+
+    .left-column {
+        background-color: #EE7154;
+    }
+
+    .right-column {
+        background-color: #EE7154;
+    }
 }
 </style>
