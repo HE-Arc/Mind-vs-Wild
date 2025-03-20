@@ -9,21 +9,21 @@
       <q-card-section>
         <div class="text-subtitle1 text-primary q-mb-xs">Infos du Groupe</div>
         <div class="q-mb-sm">
-          <strong class="text-black">Description:</strong> <span class="text-black">{{ group.description }}</span>
+          <strong>Description:</strong> {{ group.description }}
         </div>
         <div class="q-mb-sm">
-            <strong class="text-black">Créé par:</strong> <span class="text-black">{{ group.created_by }}</span>
+          <strong>Créé par:</strong> {{ group.created_by }}
         </div>
         <div class="q-mb-md">
-          <strong class="text-black">Membres ({{ group.members?.length || 0 }}):</strong>
+          <strong>Membres ({{ group.members?.length || 0 }}):</strong>
         </div>
 
         <q-list bordered separator class="rounded-borders q-mb-sm">
-          <q-item v-for="member in group.members || []" :key="member.user.id" > 
+          <q-item v-for="member in group.members || []" :key="member.user.id">
             <q-item-section avatar>
               <q-avatar icon="person" color="primary" />
             </q-item-section>
-            <q-item-section class="text-black">{{ member.user.username }}</q-item-section>
+            <q-item-section>{{ member.user.username }}</q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
@@ -40,7 +40,7 @@
 
           <div class="q-mb-md">
             <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm" />
-            <strong class="text-black">Invitation Générique :</strong>
+            <strong>Invitation Générique :</strong>
           </div>
           <q-btn label="Générer un lien" color="secondary" @click="generateLink" />
           <div v-if="inviteLink" class="q-mt-sm">
@@ -52,7 +52,7 @@
 
           <div class="q-mb-md">
             <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm" />
-            <strong class="text-black">Invitation Nominative :</strong>
+            <strong>Invitation Nominative :</strong>
           </div>
           <q-input v-model="inviteUsername" label="Nom d'utilisateur" outlined dense />
           <q-btn label="Inviter" color="primary" @click="sendInvite" class="q-mt-sm" />
@@ -72,6 +72,7 @@
       <q-card-section>
         <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
         <q-list bordered separator>
+          {{ group }}
           <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
             <q-item-section>
               <div class="text-bold">{{ room.name }}</div>

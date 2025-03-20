@@ -15,7 +15,7 @@ class RoomParticipantSerializer(serializers.ModelSerializer):
         fields = ['user', 'joined_at']
 
 class RoomSerializer(serializers.ModelSerializer):
-    participants = RoomParticipantSerializer(source='participants', many=True, read_only=True)
+    participants = RoomParticipantSerializer(many=True, read_only=True)
     class Meta:
         model = Room
         fields = [

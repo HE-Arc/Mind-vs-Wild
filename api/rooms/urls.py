@@ -1,11 +1,11 @@
-#from django.urls import path, include
-#from rest_framework.routers import DefaultRouter
-#from invite.views import AcceptInviteAPIView
+# from django.contrib import admin
+# from django.urls import path, include
+# from rest_framework.routers import DefaultRouter
+# from rooms.views import RoomViewSet
 
-# Création du routeur DRF
-#router = DefaultRouter()
+# router = DefaultRouter()
 
-#urlpatterns = [
-#    path('', include(router.urls)),
-#    path('groups/accept-invite/<str:token>/', AcceptInviteAPIView.as_view(), name='accept-invite'),
-#]
+
+# urlpatterns = [
+#     path('api/', include(router.urls)),
+# ]
