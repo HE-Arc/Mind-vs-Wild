@@ -27,14 +27,39 @@ export const useRoomStore = defineStore('room', {
     async joinRoomByCode(code) {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/join/${code}/`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${code}/join/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },
         },
       )
-      this.currentRoom = response.data
+      this.currentRoom = response.data.room
       return response.data
+    },
+
+    async createRoom(name, groupId = null) {
+      const token = localStorage.getItem('token')
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/`,
+        { name, group: groupId },
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      this.rooms.push(response.data)
+      return response.data
+    },
+
+    async leaveRoom() {
+      const token = localStorage.getItem('token')
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${this.currentRoom.code}/leave/`,
+        {},
+        {
+          headers: { Authorization: `Token ${token}` },
+        },
+      )
+      this.currentRoom = null
     },
   },
 })

@@ -69,15 +69,21 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
-      path: '/rooms/join',
+      path: '/rooms/:code/join',
       name: 'join-room',
-      component: JoinRoomView,
+      component: RoomDetailView,
       beforeEnter: requireAuth
     },
     {
       path: '/rooms/:code',
       name: 'room-detail',
       component: RoomDetailView,
+      beforeEnter: requireAuth
+    },
+    {
+      path: '/rooms/:code/leave',
+      name: 'leave-room',
+      component: RoomListView,
       beforeEnter: requireAuth
     },
     {
