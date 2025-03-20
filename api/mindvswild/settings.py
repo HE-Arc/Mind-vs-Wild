@@ -30,6 +30,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'authentication',
     'mindvswild',
+    'groups',
+    'rooms',
+    'invite',
 ]
 
 MIDDLEWARE = [

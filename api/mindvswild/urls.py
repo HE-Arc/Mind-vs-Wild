@@ -16,17 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
-from .views import GroupViewSet, RoomViewSet, AcceptInviteAPIView
+from rest_framework.routers import DefaultRouter
+from groups.views import GroupViewSet
+from invite.views import InviteViewSet
+from rooms.views import RoomViewSet
 
-router = routers.DefaultRouter()
+router = DefaultRouter()
 router.register(r'groups', GroupViewSet, basename='group')
+router.register(r'groups/accept-invite', InviteViewSet, basename='group-invite')
 router.register(r'rooms', RoomViewSet, basename='room')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('authentication.urls')), 
+    path('api/auth/', include('authentication.urls')),
     path('api/', include(router.urls)),
-    path('api/groups/accept-invite/<str:token>/', AcceptInviteAPIView.as_view(), name='accept-invite'),
     path('api/', include("quiz.urls")),
 ]
