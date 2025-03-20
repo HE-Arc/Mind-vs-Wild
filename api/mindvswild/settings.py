@@ -1,6 +1,5 @@
 from pathlib import Path
-import environ
-
+import environ # type: ignore
 env = environ.Env()
 
 environ.Env.read_env()
@@ -17,7 +16,10 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'rest_framework',
+    'quiz',
     'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -61,6 +63,18 @@ REST_FRAMEWORK = {
     
 }
 
+# Channels configuration
+ASGI_APPLICATION = 'mindvswild.asgi.application'
+
+WSGI_APPLICATION = 'mindvswild.wsgi.application'    
+
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  
+    }
+}
 CORS_ALLOW_HEADERS = [
     'authorization',
     'content-type',
@@ -84,7 +98,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mindvswild.wsgi.application'    
 
 # Database
 DATABASES = {
