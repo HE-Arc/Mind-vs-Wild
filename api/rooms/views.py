@@ -12,7 +12,6 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'code'  # Use the code instead of the id
 
     def get_queryset(self):
         """Limit to rooms of groups where the user is a member and public rooms."""
@@ -42,24 +41,30 @@ class RoomViewSet(viewsets.ModelViewSet):
         return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def join(self, request, code=None):
-        """Join a room by code"""
-        room = get_object_or_404(Room, code=code)
+    def join(self, request, pk=None):
+        """Join a room by id"""
+        room = get_object_or_404(Room, id=pk)
         
         # Check if the user is a member of the group linked to the room
         if room.group and not room.group.memberships.filter(user=request.user).exists():
             return Response({"detail": "Vous n'êtes pas membre du groupe."}, status=status.HTTP_403_FORBIDDEN)
-        # Add the user to the room
-        RoomUser.objects.get_or_create(room=room, user=request.user)
-        return Response({
-            "detail": "Vous avez rejoint la salle.",
-            "room": RoomSerializer(room).data
-        }, status=status.HTTP_200_OK)
+        
+        # Add the user to the room if not already a participant
+        room_user, created = RoomUser.objects.get_or_create(room=room, user=request.user)
+        if created:
+            return Response({
+                "detail": "Vous avez rejoint la salle.",
+                "room": RoomSerializer(room).data
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "room": RoomSerializer(room).data
+            }, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def leave(self, request, code=None):
+    def leave(self, request, pk=None):
         """Leave a room"""
-        room = get_object_or_404(Room, code=code)
+        room = get_object_or_404(Room, id=pk)
         user = request.user
 
         # Check if the user is a member of the room
@@ -76,4 +81,3 @@ class RoomViewSet(viewsets.ModelViewSet):
         # If the user is not the creator, they can leave the room
         participation.delete()
         return Response({"detail": "Vous avez quitté la salle."}, status=status.HTTP_200_OK)
-    

@@ -72,11 +72,11 @@
       <q-card-section>
         <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
         <q-list bordered separator>
-          {{ group }}
           <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
             <q-item-section>
               <div class="text-bold">{{ room.name }}</div>
-              <div class="text-subtitle2 text-grey">Code: {{ room.code }}</div>
+              <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
+              <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
             </q-item-section>
             <q-item-section side>
               <q-icon name="arrow_forward" />
@@ -139,6 +139,10 @@ onMounted(async () => {
   await groupStore.fetchGroups()
   const id = route.params.id
   group.value = groupStore.groups.find(g => g.id == id)
+  if (group.value) {
+    await roomStore.fetchRooms()
+    group.value.rooms = roomStore.rooms.filter(room => room.group === group.value.id)
+  }
 })
 
 const isAdmin = computed(() => {
@@ -199,7 +203,7 @@ async function createRoom() {
   try {
     const room = await roomStore.createRoom(newRoomName.value, group.value.id)
     $q.notify({ type: 'positive', message: 'Room créée' })
-    router.push(`/rooms/${room.code}`)
+    router.push(`/rooms/${room.id}`)
   } catch (err) {
     $q.notify({ type: 'negative', message: err?.response?.data?.detail || 'Erreur' })
   }
@@ -207,6 +211,6 @@ async function createRoom() {
 
 // Redirection vers une room
 function goToRoom(room) {
-  router.push(`/rooms/${room.code}`)
+  router.push(`/rooms/${room.id}`)
 }
 </script>
