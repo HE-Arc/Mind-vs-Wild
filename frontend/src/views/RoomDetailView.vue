@@ -133,7 +133,7 @@ const timeLeft = ref(0)
 const maxTime = ref(30)
 
 // Ajouter aux variables
-const isHost = computed(() => room.value?.created_by?.id === authStore.user?.id)
+const isHost = ref(false)
 const gameOptions = ref({
   eliminationMode: false,
   questionTime: 30,
@@ -150,6 +150,7 @@ onMounted(async () => {
   if(message.value) {
     $q.notify({ type: 'positive', message: message.value })
   }
+  isHost.value = computed(() => room.value?.created_by?.id === authStore.user?.id)
 })
 
 
