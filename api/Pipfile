@@ -12,9 +12,9 @@ django-environ = "*"
 channels-redis = "*"
 requests = "*"
 daphne = "*"
-environ = "*"
 aiohttp = "*"
 channels = "*"
+environ = "*"
 
 [dev-packages]
 

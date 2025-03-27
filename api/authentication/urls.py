@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_api, register_api, get_user, logout, delete_user, update_user
+from .views import login_api, register_api, get_user, logout, delete_user, update_user, update_avatar_type
 
 urlpatterns = [
     path('login/', login_api, name='login_api'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('logout/', logout, name='logout'),
     path('delete/', delete_user, name='delete_user'),
     path('update/', update_user, name='update_user'),
+    path('update-avatar/', update_avatar_type, name='update_avatar_type'),
 ]

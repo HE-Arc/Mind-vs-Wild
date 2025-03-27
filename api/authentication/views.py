@@ -18,7 +18,7 @@ from .serializers import UserSerializer
 def login_api(request):
     print("DEBUG: raw username/password =", repr(request.data['username']), repr(request.data['password']))
     user = get_object_or_404(User, username=request.data['username'])
-    if not user.check_password(request.data['password']):
+    if not user.check_password(request.data['password']): 
         return Response("incorrect password", status=status.HTTP_401_UNAUTHORIZED)
     token, created = Token.objects.get_or_create(user=user)
     serializer = UserSerializer(user)
@@ -53,14 +53,8 @@ def register_api(request):
 @permission_classes([IsAuthenticated])
 def get_user(request):
     user = request.user
-
-    return Response({
-        'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-        }
-    }, status=status.HTTP_200_OK)
+    serializer = UserSerializer(user)
+    return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -103,5 +97,23 @@ def update_user(request):
         return Response({'message': 'User updated successfully', 'user': serializer.data}, status=status.HTTP_200_OK)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_avatar_type(request):
+    if 'profile_picture_type' not in request.data:
+        return Response({'error': 'profile_picture_type is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    picture_type = int(request.data['profile_picture_type'])
+    if not (1 <= picture_type <= 4):
+        return Response({'error': 'profile_picture_type must be between 1 and 4'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    profile = request.user.profile
+    profile.profile_picture_type = picture_type
+    profile.save()
+    
+    serializer = UserSerializer(request.user)
+    return Response({'message': 'Avatar type updated successfully', 'user': serializer.data}, status=status.HTTP_200_OK)
 
 
