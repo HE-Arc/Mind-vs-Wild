@@ -16,7 +16,7 @@ from .serializers import UserSerializer
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_api(request):
-    print("DEBUG: raw username/password =", repr(request.data['username']), repr(request.data['password']))
+    #print("DEBUG: raw username/password =", repr(request.data['username']), repr(request.data['password']))
     user = get_object_or_404(User, username=request.data['username'])
     if not user.check_password(request.data['password']): 
         return Response("incorrect password", status=status.HTTP_401_UNAUTHORIZED)

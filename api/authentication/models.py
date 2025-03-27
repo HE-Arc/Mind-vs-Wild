@@ -10,7 +10,6 @@ class Profile(models.Model):
         return f"{self.user.username} Profile"
 
     def get_avatar_url(self):
-        # Robohash permet différents sets d'images : 1=robot, 2=monster, 3=head, 4=cat
         set_type = self.profile_picture_type or 1
         return f"https://robohash.org/{self.user.username}?set=set{set_type}"
 
