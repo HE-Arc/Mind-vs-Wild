@@ -1,116 +1,250 @@
 import json
 import random
+import asyncio
 import aiohttp
-
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import User
+from rest_framework.exceptions import AuthenticationFailed
+from channels.db import database_sync_to_async
+from urllib.parse import parse_qs
+from rest_framework.authtoken.models import Token
+from rooms.models import Room, RoomUser
 
-class QuizConsumer(AsyncWebsocketConsumer):
+# Dictionnaire global pour stocker l'état du jeu par room_id.
+# Pour la production, pensez à utiliser un stockage persistant.
+GAME_STATE = {}
 
+class RoomQuizConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        """Méthode appelée quand un client WebSocket se connecte."""
-        # On accepte la connexion WebSocket
-        await self.accept()
-        # On peut envoyer un message de bienvenue
-        await self.send(text_data=json.dumps({"status": "connected"}))
+        """
+        Connexion WebSocket : vérification du token, de la room et de l'appartenance.
+        """
+        query_params = parse_qs(self.scope["query_string"].decode())
+        token = query_params.get('token', [None])[0]
+        if not token:
+            await self.close()
+            return
 
-        # On va stocker dans l'instance la "dernière question" et la "bonne réponse"
-        self.current_question_id = None
-        self.current_correct_answer = None
+        # Get user from token
+        try:
+            self.user = await self.get_user_from_token(token)
+        except AuthenticationFailed:
+            await self.close()
+            return
+
+        # Get room from URL path
+        self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
+        room = await self.get_room_by_code(self.room_code)
+        if room is None:
+            await self.close()
+            return
+
+        self.room_id = room.id
+
+        if self.user.is_anonymous:
+            await self.close()
+            return
+
+        is_in_room = await self.user_in_room(self.room_id, self.user.id)
+        if not is_in_room:
+            await self.close()
+            return
+
+        self.room_group_name = f"room_{self.room_id}"
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+        # Initialisation locale pour les infos statiques
+        self.nb_participants = await self.count_participants(self.room_id)
+        print(f"User {self.user.username} connected to room {self.room_id}")
 
     async def disconnect(self, close_code):
-        """Méthode appelée quand le client se déconnecte."""
-        print(f"WebSocket déconnecté (code: {close_code})")
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        if hasattr(self, 'user') and self.user:
+            print(f"User {self.user.username} disconnected from room {getattr(self, 'room_id', '?')} code={close_code}")
+        else:
+            print(f"Un utilisateur non authentifié s'est déconnecté code={close_code}")
+
+    async def get_user_from_token(self, token):
+        try:
+            token_obj = await database_sync_to_async(Token.objects.get)(key=token)
+            return token_obj.user
+        except Token.DoesNotExist:
+            raise AuthenticationFailed("Token invalide ou expiré")
 
     async def receive(self, text_data):
-        """Méthode appelée à chaque message reçu du client."""
+        """
+        Gestion des actions envoyées par les clients.
+        """
         data = json.loads(text_data)
         action = data.get("action")
 
-        if action == "fetch_quiz":
-            # Récupérer une question depuis l'API externe
-            question_data = await self.fetch_random_question()
-            if question_data is None:
-                await self.send(json.dumps({"error": "Impossible de récupérer une question"}))
+        if action == "start_game":
+            # Charger les questions via l'API et initialiser l'état du jeu pour la room
+            await self.load_questions_from_api()
+            if not self.questions:
+                await self.send(json.dumps({"error": "Aucune question trouvée via l'API"}))
                 return
 
-            # Stocker l'ID et la bonne réponse, pour vérifier plus tard
-            self.current_question_id = question_data["_id"]
-            # On ne renvoie pas le champ 'answer' en clair, mais on la stocke pour vérifier
-            self.current_correct_answer = question_data["answer"]
+            # Initialisation de l'état global pour la room
+            participants_ids = await self.get_participant_ids(self.room_id)
+            GAME_STATE[self.room_id] = {
+                "questions": self.questions,
+                "current_question_index": 0,
+                "answered_users": set(),
+                "user_scores": {pid: 0 for pid in participants_ids}
+            }
 
-            # Construire la liste des 4 réponses [1 bonne, 3 mauvaises], puis mélanger
-            all_answers = [
-                {"key": "A", "text": question_data["answer"]},
-                {"key": "B", "text": question_data["badAnswers"][0]},
-                {"key": "C", "text": question_data["badAnswers"][1]},
-                {"key": "D", "text": question_data["badAnswers"][2]},
-            ]
-            random.shuffle(all_answers)
-
-            # Envoyer la question au client
-            await self.send(json.dumps({
-                "question": {
-                    "id": question_data["_id"],
-                    "question": question_data["question"],
-                    "answers": all_answers,
-                },
-                "difficulty": question_data["difficulty"],
-                "category": question_data["category"]
-            }))
+            # Diffuser la première question
+            question_data = self.build_question_dict(GAME_STATE[self.room_id]["questions"][0])
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "send_question", "question": question_data}
+            )
 
         elif action == "submit_answer":
-            quiz_id = data.get("quizId")
-            user_answer_key = data.get("answerKey")  # 'A', 'B', 'C' ou 'D'
+            # Récupérer l'état partagé pour la room
+            state = GAME_STATE.get(self.room_id)
+            if not state:
+                await self.send(json.dumps({"error": "La partie n'a pas démarré"}))
+                return
 
-            if quiz_id != self.current_question_id:
-                # L'utilisateur n'a pas répondu à la bonne question (ou plus du tout la même)
+            question_id = data.get("question_id")
+            answer_text = data.get("answer_text")
+
+            # Vérifier que la réponse concerne la question en cours
+            current_q = state["questions"][state["current_question_index"]]
+            if question_id != current_q["_id"]:
                 await self.send(json.dumps({"error": "Mauvais ID de question"}))
                 return
 
-            # On doit déterminer ce qui était la 'bonne' key.
-            # On sait seulement 'self.current_correct_answer' = ex "Paris"
-            # Or le client a envoyé user_answer_key (ex: 'C').
-            # Pour vérifier, on doit se rappeler comment on a construit 'all_answers' plus haut.
-            # => Soit on stocke un mapping 'key' -> 'text'.
-            #    (Ici, on va demander au client de renvoyer aussi "answerText".)
+            # Vérifier si l'utilisateur a déjà répondu pour cette question
+            if self.user.id in state["answered_users"]:
+                await self.send(json.dumps({"error": "Déjà répondu"}))
+                return
 
-            answer_text = data.get("answerText")
-            # Compare la réponse à 'self.current_correct_answer'
-            if answer_text == self.current_correct_answer:
-                result = "correct"
-            else:
-                result = "incorrect"
+            # Vérifier la réponse
+            is_correct = (answer_text['text'] == current_q["answer"])
+            if is_correct:
+                state["user_scores"][self.user.id] += 1
 
-            # Envoyer le résultat
+            state["answered_users"].add(self.user.id)
+
+            # Envoyer le résultat individuel à l'utilisateur
             await self.send(json.dumps({
-                "result": result,
-                "correct_answer": self.current_correct_answer
+                "result": "correct" if is_correct else "incorrect",
+                "score": state["user_scores"][self.user.id]
             }))
 
-            # (Optionnel) Envoyer la question suivante immédiatement
+            # Calculer le nombre de joueurs restants et diffuser à tous
+            players_left = self.nb_participants - len(state["answered_users"])
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "players_left", "players_left": players_left}
+            )
 
+            # Si tout le monde a répondu, passer à la question suivante
+            if len(state["answered_users"]) == self.nb_participants:
+                await asyncio.sleep(1)  # délai avant de passer à la suite
+                state["current_question_index"] += 1
+                if state["current_question_index"] >= len(state["questions"]):
+                    await self.end_game(state)
+                    # Optionnel : supprimer l'état
+                    GAME_STATE.pop(self.room_id, None)
+                else:
+                    state["answered_users"] = set()  # réinitialiser pour la nouvelle question
+                    next_q = self.build_question_dict(state["questions"][state["current_question_index"]])
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {"type": "send_question", "question": next_q}
+                    )
         else:
-            # Action non reconnue
             await self.send(json.dumps({"error": "Action non reconnue"}))
 
-    async def fetch_random_question(self):
-        """Appelle l'API externe pour récupérer des quiz, puis renvoie un quiz au hasard."""
-        url = "https://quizzapi.jomoreschi.fr/api/v1/quiz?limit=5"  # on peut ajouter &category=... &difficulty=... etc.
+    async def end_game(self, state):
+        sorted_scores = sorted(state["user_scores"].items(), key=lambda kv: kv[1], reverse=True)
+        leaderboard = []
+        for user_id, score in sorted_scores:
+            username = await self.get_username(user_id)
+            leaderboard.append({"user_id": user_id, "username": username, "score": score})
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": "send_scores", "leaderboard": leaderboard}
+        )
 
-        # Appel HTTP en asynchrone avec aiohttp
+    async def send_question(self, event):
+        question_data = event["question"]
+        await self.send(json.dumps({"action": "new_question", "question": question_data}))
+
+    async def players_left(self, event):
+        await self.send(json.dumps({"action": "players_left", "players_left": event["players_left"]}))
+
+    async def send_scores(self, event):
+        leaderboard = event["leaderboard"]
+        await self.send(json.dumps({"action": "game_over", "leaderboard": leaderboard}))
+
+    @database_sync_to_async
+    def user_in_room(self, room_id, user_id):
+        return RoomUser.objects.filter(room_id=room_id, user_id=user_id).exists()
+
+    @database_sync_to_async
+    def count_participants(self, room_id):
+        return RoomUser.objects.filter(room_id=room_id).count()
+
+    @database_sync_to_async
+    def get_room_by_code(self, room_code):
+        try:
+            return Room.objects.get(code=room_code)
+        except Room.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def get_participant_ids(self, room_id):
+        return list(RoomUser.objects.filter(room_id=room_id).values_list("user_id", flat=True))
+
+    @database_sync_to_async
+    def get_username(self, user_id):
+        try:
+            return User.objects.get(id=user_id).username
+        except User.DoesNotExist:
+            return "Unknown"
+
+    async def load_questions_from_api(self):
+        """
+        Appelle l'API externe pour récupérer une liste de quiz.
+        Stocke la liste retournée dans self.questions.
+        """
+        url = "https://quizzapi.jomoreschi.fr/api/v1/quiz?limit=5"
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(url) as response:
                     if response.status == 200:
                         data = await response.json()
                         quizzes = data.get("quizzes", [])
-                        if not quizzes:
-                            return None
-                        # Choisir un quiz aléatoire
-                        return random.choice(quizzes)
+                        self.questions = quizzes
                     else:
                         print(f"Erreur API: status {response.status}")
-                        return None
+                        self.questions = []
             except Exception as e:
                 print("Erreur lors de l'appel à l'API:", e)
-                return None
+                self.questions = []
+
+    def build_question_dict(self, question_obj):
+        """
+        Construit un dictionnaire formaté pour la question.
+        """
+        all_answers = [
+            {"key": "A", "text": question_obj["answer"]},
+            {"key": "B", "text": question_obj["badAnswers"][0]},
+            {"key": "C", "text": question_obj["badAnswers"][1]},
+            {"key": "D", "text": question_obj["badAnswers"][2]},
+        ]
+        random.shuffle(all_answers)
+        return {
+            "id": question_obj["_id"],
+            "text": question_obj["question"],
+            "options": all_answers,
+            "difficulty": question_obj.get("difficulty"),
+            "category": question_obj.get("category"),
+        }
