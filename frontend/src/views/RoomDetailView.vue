@@ -3,16 +3,13 @@
     <div v-if="room">
       <div class="text-center q-mb-md">
         <h2 class="text-h5 text-white text-bold q-ma-none">{{ room.name }}</h2>
-        <div class="text-subtitle2 text-grey-7">Code: {{ room.code }}</div>
+        <div class="text-subtitle2 text-grey-7">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
       </div>
-
       <h3>Participants ({{ room.participants.length }})</h3>
       <ul>
-        <li v-for="p in room.participants" :key="p.id">
-          {{ p.user.username }}
-        </li>
+        <li v-for="p in room.participants" :key="p.id">{{ p.user.username }}</li>
       </ul>
-
+  
       <q-btn color="negative" label="Quitter la Room" class="q-mt-md" @click="leaveRoom" />
 
       <!-- Ajouter avant le bouton "Lancer la partie" -->
@@ -50,11 +47,6 @@
 
       <!-- Modifier le bouton pour passer les options -->
       <q-btn color="positive" label="Lancer la partie" class="q-ml-sm" @click="startGameWithOptions" />
-
-      <!-- Zone d'erreur / messages WebSocket -->
-      <q-banner v-if="errorMsg" class="q-mt-md" :class="{ 'bg-negative text-white': true }">
-        {{ errorMsg }}
-      </q-banner>
 
       <!-- Zone du quiz en temps réel -->
       <div v-if="currentQuestion" class="q-mt-md">
@@ -116,17 +108,18 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRoomStore } from '@/stores/room'
+import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/useAuthStore'
 
-// Imports pour la logique
+
 const route = useRoute()
 const router = useRouter()
 const roomStore = useRoomStore()
 const authStore = useAuthStore() // Access the auth store
+const $q = useQuasar()
 
 const room = ref(null)
-const errorMsg = ref(null)
-
+const message = ref(route.query.message || '')
 // WebSocket
 let socket = null
 
@@ -140,7 +133,7 @@ const timeLeft = ref(0)
 const maxTime = ref(30)
 
 // Ajouter aux variables
-const isHost = computed(() => room.value?.created_by?.id === authStore.user?.id)
+const isHost = ref(false)
 const gameOptions = ref({
   eliminationMode: false,
   questionTime: 30,
@@ -152,19 +145,14 @@ const gameOptions = ref({
  * Puis ouvre éventuellement le WS (si on veut l'ouvrir au montage).
  */
 onMounted(async () => {
-  const code = route.params.code
-  room.value = await roomStore.fetchRoomDetails(code)
-
-  if (!room.value) {
-    console.error("Room introuvable")
-    return
+  const id = route.params.id
+  room.value = await roomStore.fetchRoomDetails(id)
+  if(message.value) {
+    $q.notify({ type: 'positive', message: message.value })
   }
-
-  // => Option 1 : ouvrir la WebSocket tout de suite
-  // connectWebSocket()
-
-  // => Option 2 : on attend que l'user clique "Lancer la partie" pour ouvrir la WS
+  isHost.value = computed(() => room.value?.created_by?.id === authStore.user?.id)
 })
+
 
 function leaveRoom() {
   roomStore.leaveRoom().then(() => {
@@ -180,11 +168,15 @@ function connectWebSocket(callback) {
   }
   const token = authStore.token;
   if (!token) {
-    errorMsg.value = "Utilisateur non authentifié";
-    return;
+    message.value = "Utilisateur non authentifié"
+    $q.notify({ type: 'negative', message: message.value })
+
+    return
   }
-  const wsUrl = `${import.meta.env.VITE_WEBSOCKET_URL}/${room.value.code}/?token=${token}`;
-  socket = new WebSocket(wsUrl);
+
+  // Construire l'URL WebSocket avec le token
+  const wsUrl = `${import.meta.env.VITE_WEBSOCKET_URL}/${room.value.id}/?token=${token}`
+  socket = new WebSocket(wsUrl)
 
   socket.onopen = () => {
     console.log("WebSocket connecté - room", room.value.id);
@@ -193,7 +185,9 @@ function connectWebSocket(callback) {
 
   socket.onerror = (err) => {
     console.error("WebSocket error", err)
-    errorMsg.value = "Erreur de connexion WebSocket"
+
+    message.value = "Erreur de connexion WebSocket"
+    $q.notify({ type: 'negative', message: message.value })
   }
 
   socket.onclose = () => {
@@ -206,7 +200,8 @@ function connectWebSocket(callback) {
     console.log("Reçu WS:", data)
 
     if (data.error) {
-      errorMsg.value = data.error
+      message.value = data.error
+      $q.notify({ type: 'negative', message: message.value })
       return
     }
 

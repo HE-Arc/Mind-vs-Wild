@@ -15,19 +15,19 @@ export const useRoomStore = defineStore('room', {
       this.rooms = response.data
     },
 
-    async fetchRoomDetails(code) {
+    async fetchRoomDetails(id) {
       const token = localStorage.getItem('token')
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/rooms/${code}/`, {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/rooms/${id}/`, {
         headers: { Authorization: `Token ${token}` },
       })
       this.currentRoom = response.data
       return this.currentRoom
     },
 
-    async joinRoomByCode(code) {
+    async joinRoom(id) {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${code}/join/`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${id}/join/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },
@@ -53,7 +53,7 @@ export const useRoomStore = defineStore('room', {
     async leaveRoom() {
       const token = localStorage.getItem('token')
       await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${this.currentRoom.code}/leave/`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/rooms/${this.currentRoom.id}/leave/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },

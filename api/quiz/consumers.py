@@ -33,8 +33,8 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
             return
 
         # Get room from URL path
-        self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
-        room = await self.get_room_by_code(self.room_code)
+        self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
+        room = await self.get_room_by_id(self.room_id)
         if room is None:
             await self.close()
             return
@@ -57,14 +57,6 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         # Initialisation locale pour les infos statiques
         self.nb_participants = await self.count_participants(self.room_id)
         print(f"User {self.user.username} connected to room {self.room_id}")
-
-    async def disconnect(self, close_code):
-        if hasattr(self, 'room_group_name'):
-            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        if hasattr(self, 'user') and self.user:
-            print(f"User {self.user.username} disconnected from room {getattr(self, 'room_id', '?')} code={close_code}")
-        else:
-            print(f"Un utilisateur non authentifié s'est déconnecté code={close_code}")
 
     async def get_user_from_token(self, token):
         try:
@@ -259,9 +251,9 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         return RoomUser.objects.filter(room_id=room_id).count()
 
     @database_sync_to_async
-    def get_room_by_code(self, room_code):
+    def get_room_by_id(self, room_id):
         try:
-            return Room.objects.get(code=room_code)
+            return Room.objects.get(id=room_id)
         except Room.DoesNotExist:
             return None
 
