@@ -144,6 +144,18 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                 {"type": "players_left", "players_left": players_left}
             )
 
+            # Envoyer la mise à jour du score à tous les joueurs
+            leaderboard = []
+            sorted_scores = sorted(state["user_scores"].items(), key=lambda kv: kv[1], reverse=True)
+            for user_id, score in sorted_scores:
+                username = await self.get_username(user_id)
+                leaderboard.append({"user_id": user_id, "username": username, "score": score})
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "send_live_scores", "leaderboard": leaderboard}
+            )
+
             # Si tout le monde a répondu, passer à la question suivante
             if len(state["answered_users"]) == self.nb_participants:
                 await asyncio.sleep(1)  # délai avant de passer à la suite
@@ -183,6 +195,60 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
     async def send_scores(self, event):
         leaderboard = event["leaderboard"]
         await self.send(json.dumps({"action": "game_over", "leaderboard": leaderboard}))
+
+    async def send_live_scores(self, event):
+        leaderboard = event["leaderboard"]
+        await self.send(json.dumps({"action": "live_scores", "leaderboard": leaderboard}))
+
+    async def start_question_timer(self, question_id, duration=30):
+        """Lance un timer pour la question courante"""
+        state = GAME_STATE.get(self.room_id)
+        if not state:
+            return
+            
+        # Annoncer le démarrage du timer
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": "send_timer_update", "seconds_left": duration, "question_id": question_id}
+        )
+        
+        # Compter à rebours
+        for seconds_left in range(duration-1, -1, -1):
+            await asyncio.sleep(1)
+            # Si tous les joueurs ont répondu, arrêter le timer
+            if len(state["answered_users"]) == self.nb_participants:
+                break
+                
+            # Si le jeu est terminé ou la question a changé, arrêter le timer
+            if not GAME_STATE.get(self.room_id) or GAME_STATE[self.room_id]["current_question_index"] != state["current_question_index"]:
+                break
+                
+            # Envoyer la mise à jour du timer
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "send_timer_update", "seconds_left": seconds_left, "question_id": question_id}
+            )
+        
+        # Quand le timer expire, passer à la question suivante si nécessaire
+        state = GAME_STATE.get(self.room_id)
+        if state and state["current_question_index"] == state["current_question_index"]:
+            # Traiter les joueurs qui n'ont pas répondu comme ayant donné une réponse incorrecte
+            all_participants = set(await self.get_participant_ids(self.room_id))
+            non_responders = all_participants - state["answered_users"]
+            
+            for user_id in non_responders:
+                state["answered_users"].add(user_id)
+                
+            # Passer à la question suivante
+            await self.move_to_next_question(state)
+
+    async def send_timer_update(self, event):
+        """Envoie la mise à jour du timer aux clients"""
+        await self.send(json.dumps({
+            "action": "timer_update", 
+            "seconds_left": event["seconds_left"],
+            "question_id": event["question_id"]
+        }))
 
     @database_sync_to_async
     def user_in_room(self, room_id, user_id):

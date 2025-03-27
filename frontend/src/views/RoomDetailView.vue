@@ -15,8 +15,41 @@
 
       <q-btn color="negative" label="Quitter la Room" class="q-mt-md" @click="leaveRoom" />
 
-      <!-- Lancer le quiz -->
-      <q-btn color="positive" label="Lancer la partie" class="q-ml-sm" @click="startGame" />
+      <!-- Ajouter avant le bouton "Lancer la partie" -->
+      <q-expansion-item
+        v-if="isHost"
+        label="Options de jeu"
+        icon="settings"
+        header-class="text-primary"
+      >
+        <q-card>
+          <q-card-section>
+            <q-toggle v-model="gameOptions.eliminationMode" label="Mode élimination" />
+            <q-slider
+              v-model="gameOptions.questionTime"
+              :min="10"
+              :max="60"
+              :step="5"
+              label
+              label-always
+              class="q-mt-lg"
+            >
+              <template v-slot:thumb-label>{{ gameOptions.questionTime }}s</template>
+            </q-slider>
+            <div class="text-caption">Temps par question</div>
+
+            <q-select
+              v-model="gameOptions.difficulty"
+              :options="['easy', 'medium', 'hard', 'mixed']"
+              label="Difficulté"
+              class="q-mt-md"
+            />
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
+
+      <!-- Modifier le bouton pour passer les options -->
+      <q-btn color="positive" label="Lancer la partie" class="q-ml-sm" @click="startGameWithOptions" />
 
       <!-- Zone d'erreur / messages WebSocket -->
       <q-banner v-if="errorMsg" class="q-mt-md" :class="{ 'bg-negative text-white': true }">
@@ -40,6 +73,20 @@
             </q-list>
           </q-card-section>
         </q-card>
+      </div>
+
+      <!-- Ajouter dans la section quiz -->
+      <div v-if="currentQuestion && timeLeft > 0" class="timer q-mt-sm">
+        <q-linear-progress
+          :value="timeLeft / maxTime"
+          :color="timeLeft < 5 ? 'negative' : 'primary'"
+          size="25px"
+          class="q-mb-xs"
+        >
+          <div class="absolute-full flex flex-center">
+            <q-badge color="white" text-color="black" :label="`${timeLeft}s`" />
+          </div>
+        </q-linear-progress>
       </div>
 
       <!-- Affichage du nombre de joueurs restants à répondre -->
@@ -66,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRoomStore } from '@/stores/room'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -87,6 +134,18 @@ let socket = null
 const currentQuestion = ref(null)
 const playersLeft = ref(0)
 const leaderboard = ref([])
+
+// Ajouter dans la section variables
+const timeLeft = ref(0)
+const maxTime = ref(30)
+
+// Ajouter aux variables
+const isHost = computed(() => room.value?.created_by?.id === authStore.user?.id)
+const gameOptions = ref({
+  eliminationMode: false,
+  questionTime: 30,
+  difficulty: 'mixed'
+})
 
 /**
  * Charge les infos de la room via HTTP (REST).
@@ -114,25 +173,23 @@ function leaveRoom() {
 }
 
 // Ouvrir la connexion WebSocket
-function connectWebSocket() {
+function connectWebSocket(callback) {
   if (socket) {
-    return
+    callback && callback();
+    return;
   }
-
-  // Récupérer le token d'authentification
-  const token = authStore.token
+  const token = authStore.token;
   if (!token) {
-    errorMsg.value = "Utilisateur non authentifié"
-    return
+    errorMsg.value = "Utilisateur non authentifié";
+    return;
   }
-
-  // Construire l'URL WebSocket avec le token
-  const wsUrl = `${import.meta.env.VITE_WEBSOCKET_URL}/${room.value.code}/?token=${token}`
-  socket = new WebSocket(wsUrl)
+  const wsUrl = `${import.meta.env.VITE_WEBSOCKET_URL}/${room.value.code}/?token=${token}`;
+  socket = new WebSocket(wsUrl);
 
   socket.onopen = () => {
-    console.log("WebSocket connecté - room", room.value.id)
-  }
+    console.log("WebSocket connecté - room", room.value.id);
+    if (callback) callback(); // On envoie l'action dès que la connexion est ouverte
+  };
 
   socket.onerror = (err) => {
     console.error("WebSocket error", err)
@@ -167,20 +224,31 @@ function connectWebSocket() {
         leaderboard.value = data.leaderboard
         currentQuestion.value = null
         break
+      case "timer_update":
+        timeLeft.value = data.seconds_left
+        if (data.seconds_left === 30) maxTime.value = 30
+        break
       default:
         console.log("Action WS non reconnue:", data.action)
     }
   }
 }
 
-// Méthode pour lancer la partie
-function startGame() {
-  // on ouvre la WS si pas déjà fait
+// Remplacer startGame par cette fonction
+function startGameWithOptions() {
   if (!socket) {
-    connectWebSocket()
+    connectWebSocket(() => {
+      socket.send(JSON.stringify({ 
+        action: "start_game",
+        options: gameOptions.value
+      }));
+    });
+  } else if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ 
+      action: "start_game",
+      options: gameOptions.value 
+    }));
   }
-  // envoie l'action "start_game"
-  socket.send(JSON.stringify({ action: "start_game" }))
 }
 
 // Méthode pour envoyer la réponse
