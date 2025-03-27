@@ -172,8 +172,10 @@ function connectWebSocket(callback) {
 
     return
   }
-  const wsUrl = `${import.meta.env.VITE_WEBSOCKET_URL}/${room.value.code}/?token=${token}`;
-  socket = new WebSocket(wsUrl);
+
+  // Construire l'URL WebSocket avec le token
+  const wsUrl = `${import.meta.env.VITE_WEBSOCKET_URL}/${room.value.id}/?token=${token}`
+  socket = new WebSocket(wsUrl)
 
   socket.onopen = () => {
     console.log("WebSocket connecté - room", room.value.id);
