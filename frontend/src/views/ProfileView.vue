@@ -25,6 +25,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 export default defineComponent({
   name: 'UserProfile',
@@ -35,6 +36,9 @@ export default defineComponent({
     const token = localStorage.getItem('token');
     const message = ref('');
     const router = useRouter()
+    const rightDrawerOpen = ref(false)
+    const authStore = useAuthStore()
+
 
     const getUserProfile = async () => {
       try {
@@ -48,21 +52,10 @@ export default defineComponent({
       }
     };
 
-    const logout = async () => {
-      try {
-        await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/auth/logout/`,
-          {},
-          { headers: { Authorization: `Token ${token}` } }
-        );
-
-        localStorage.removeItem('token');
-
-        router.push('/login');
-      } catch (error) {
-        console.error('Logout failed:', error);
-      }
-    };
+    function logout() {
+      rightDrawerOpen.value = false
+      authStore.logout()
+    }
 
     const delete_user = async () => {
       try {

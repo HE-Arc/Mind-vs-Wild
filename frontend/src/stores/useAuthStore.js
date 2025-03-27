@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { useGroupStore } from './group'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -21,6 +22,11 @@ export const useAuthStore = defineStore('auth', {
           this.token = response.data.token
           this.user = response.data.user
           localStorage.setItem('token', this.token)
+          
+          // Charger les groupes après une connexion réussie
+          const groupStore = useGroupStore()
+          await groupStore.fetchGroups()
+          
           return true
         }
       } catch (err) {
