@@ -1,7 +1,7 @@
 from django.urls import path
-from .consumers import QuizConsumer
+from .consumers import RoomQuizConsumer
 
 urlpatterns = [
-    path("quiz/", QuizConsumer.as_asgi()),
+    path("quiz/", RoomQuizConsumer.as_asgi()),
 ]
 
