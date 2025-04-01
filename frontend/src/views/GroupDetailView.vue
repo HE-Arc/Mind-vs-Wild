@@ -9,9 +9,9 @@
 
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-4">
-        <q-card bordered class="q-pa-md text-black">
+        <q-card bordered class="q-pa-md text-white">
           <q-card-section class="q-card-section">
-            <div class="text-subtitle1 text-primary q-mb-xs">Infos du Groupe</div>
+            <div class="text-subtitle1 q-mb-xs">Infos du Groupe</div>
             <div class="q-mb-md">
               <strong>Membres ({{ group.members?.length || 0 }}):</strong>
             </div>
@@ -40,9 +40,9 @@
 
       <div class="col-12 col-md-8">
         <div v-if="isAdmin">
-          <q-card bordered class="q-pa-md q-mb-md text-black">
+          <q-card bordered class="q-pa-md q-mb-md text-white">
             <q-card-section class="q-card-section">
-              <div class="text-subtitle1 text-primary q-mb-md">Invitations</div>
+              <div class="text-subtitle1 q-mb-md">Invitations</div>
 
               <div class="q-mb-md">
                 <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm">
@@ -52,9 +52,9 @@
                 </q-icon>
                 <strong>Invitation Générique :</strong>
               </div>
-              <q-btn label="Générer un lien" color="secondary" @click="generateLink" />
+              <q-btn label="Générer un lien" color="primary" @click="generateLink" />
               <div v-if="inviteLink" class="q-mt-sm">
-                <q-input v-model="inviteLink" label="Lien généré" readonly outlined />
+                <q-input v-model="inviteLink" label="Lien généré" bg-color="white" outlined />
                 <q-btn label="Copier" color="primary" icon="content_copy" @click="copyLink" class="q-mt-sm" />
               </div>
 
@@ -68,29 +68,29 @@
                 </q-icon>
                 <strong>Invitation Nominative :</strong>
               </div>
-              <q-input v-model="inviteUsername" label="Nom d'utilisateur" outlined dense />
+              <q-input v-model="inviteUsername" label="Nom d'utilisateur" bg-color="white" outlined dense />
               <q-btn label="Inviter" color="primary" @click="sendInvite" class="q-mt-sm" />
             </q-card-section>
           </q-card>
 
-          <q-card bordered class="q-pa-md q-mb-md text-black">
+          <q-card bordered class="q-pa-md q-mb-md text-white">
             <q-card-section class="q-card-section">
-              <div class="text-subtitle1 text-primary q-mb-md">Créer une Room</div>
-              <q-input v-model="newRoomName" label="Nom de la Room" outlined dense />
+              <div class="text-subtitle1 q-mb-md">Créer une Room</div>
+              <q-input v-model="newRoomName" label="Nom de la Room" bg-color="white" outlined dense />
               <q-btn label="Créer" color="primary" @click="createRoom" class="q-mt-sm" />
             </q-card-section>
           </q-card>
         </div>
 
-        <q-card bordered class="q-pa-md">
-          <q-card-section class="q-card-section">
-            <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
+        <q-card bordered class="q-pa-md q-mb-md ">
+          <q-card-section class="q-card-section text-white">
+            <div class="text-subtitle1 q-mb-md">Rooms du Groupe</div>
             <q-list bordered separator>
               <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
                 <q-item-section>
                   <div class="text-bold">{{ room.name }}</div>
-                  <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
-                  <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}
+                  <div class="text-subtitle2 text-white">Participants: {{ room.participants.length }}</div>
+                  <div class="text-subtitle2 text-white">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}
                   </div>
                 </q-item-section>
                 <q-item-section side>
@@ -232,12 +232,11 @@ function goToRoom(room) {
 
 <style scoped>
 .q-card {
-  background-color: #9EC8DB;
+  background-color: #2c2c38;
 }
 
 .q-card-section {
-  background-color: #ffffff;
+  background-color: #2c2c38;
 }
-
 
 </style>

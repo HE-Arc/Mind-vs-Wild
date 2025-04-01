@@ -1,5 +1,5 @@
 <template>
-  <q-page class="profile-page q-pa-md">
+  <q-page class="q-pa-md">
     <div class="row q-col-gutter-md full-width">
       <div class="col-12 col-md-4">
         <q-card class="column full-height">
@@ -146,13 +146,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.profile-page {
-  min-height: calc(100vh - 60px);
-}
 
 .profile-input {
   width: 100%;
-  
   margin-bottom: 20px;
 }
 
