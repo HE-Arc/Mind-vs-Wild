@@ -15,6 +15,8 @@ class RoomParticipantSerializer(serializers.ModelSerializer):
 
 class RoomSerializer(serializers.ModelSerializer):
     participants = RoomParticipantSerializer(many=True, read_only=True)
+    created_by = UserSerializer(read_only=True)  # Utiliser UserSerializer pour created_by également
+    
     class Meta:
         model = Room
         fields = [
