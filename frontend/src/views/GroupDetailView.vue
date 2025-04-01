@@ -16,7 +16,7 @@
               <strong>Membres ({{ group.members?.length || 0 }}):</strong>
             </div>
 
-            <q-list bordered separator class="rounded-borders q-mb-sm">
+            <q-list class="rounded-borders q-mb-sm">
               <q-item v-for="member in group.members || []" :key="member.user.id">
                 <q-avatar>
                   <img :src="member.user.avatar_url" :alt="member.user.username" />
