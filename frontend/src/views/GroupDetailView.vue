@@ -1,90 +1,107 @@
 <template>
   <q-page class="q-pa-md">
-
     <div class="text-center q-mb-md">
-      <h2 class="text-h5 text-white text-bold q-ma-none">Détails du Groupe</h2>
-      <div class="text-subtitle2 text-grey-7">{{ group.name }}</div>
-    </div>
-    <q-card bordered class="q-pa-md q-mb-md">
-      <q-card-section>
-        <div class="text-subtitle1 text-primary q-mb-xs">Infos du Groupe</div>
-        <div class="q-mb-sm">
-          <strong>Description:</strong> {{ group.description }}
-        </div>
-        <div class="q-mb-sm">
-          <strong>Créé par:</strong> {{ group.created_by }}
-        </div>
-        <div class="q-mb-md">
-          <strong>Membres ({{ group.members?.length || 0 }}):</strong>
-        </div>
-
-        <q-list bordered separator class="rounded-borders q-mb-sm">
-          <q-item v-for="member in group.members || []" :key="member.user.id">
-            <q-item-section avatar>
-              <q-avatar icon="person" color="primary" />
-            </q-item-section>
-            <q-item-section>{{ member.user.username }}</q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-
-      <q-card-actions align="right" class="q-pt-none">
-        <q-btn label="Quitter le groupe" color="negative" icon="logout" @click="confirmLeaveGroup" />
-      </q-card-actions>
-    </q-card>
-
-    <div v-if="isAdmin">
-      <q-card bordered class="q-pa-md q-mb-md">
-        <q-card-section>
-          <div class="text-subtitle1 text-primary q-mb-md">Invitations</div>
-
-          <div class="q-mb-md">
-            <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm" />
-            <strong>Invitation Générique :</strong>
-          </div>
-          <q-btn label="Générer un lien" color="secondary" @click="generateLink" />
-          <div v-if="inviteLink" class="q-mt-sm">
-            <q-input v-model="inviteLink" label="Lien généré" readonly outlined />
-            <q-btn label="Copier" color="primary" icon="content_copy" @click="copyLink" class="q-mt-sm" />
-          </div>
-
-          <q-separator spaced />
-
-          <div class="q-mb-md">
-            <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm" />
-            <strong>Invitation Nominative :</strong>
-          </div>
-          <q-input v-model="inviteUsername" label="Nom d'utilisateur" outlined dense />
-          <q-btn label="Inviter" color="primary" @click="sendInvite" class="q-mt-sm" />
-        </q-card-section>
-      </q-card>
-
-      <q-card bordered class="q-pa-md q-mb-md">
-        <q-card-section>
-          <div class="text-subtitle1 text-primary q-mb-md">Créer une Room</div>
-          <q-input v-model="newRoomName" label="Nom de la Room" outlined dense />
-          <q-btn label="Créer" color="primary" @click="createRoom" class="q-mt-sm" />
-        </q-card-section>
-      </q-card>
+      <h2 class="text-h5 text-white text-bold q-ma-none">{{ group.name }}</h2>
+      <div class="text-subtitle2 text-grey-3">
+        {{ group.description }}
+      </div>
     </div>
 
-    <q-card bordered class="q-pa-md">
-      <q-card-section>
-        <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
-        <q-list bordered separator>
-          <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
-            <q-item-section>
-              <div class="text-bold">{{ room.name }}</div>
-              <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
-              <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
-            </q-item-section>
-            <q-item-section side>
-              <q-icon name="arrow_forward" />
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-    </q-card>
+    <div class="row q-col-gutter-md">
+      <div class="col-12 col-md-4">
+        <q-card bordered class="q-pa-md text-black">
+          <q-card-section class="q-card-section">
+            <div class="text-subtitle1 text-primary q-mb-xs">Infos du Groupe</div>
+            <div class="q-mb-md">
+              <strong>Membres ({{ group.members?.length || 0 }}):</strong>
+            </div>
+
+            <q-list bordered separator class="rounded-borders q-mb-sm">
+              <q-item v-for="member in group.members || []" :key="member.user.id">
+                <q-avatar>
+                  <img :src="member.user.avatar_url" :alt="member.user.username" />
+                </q-avatar>
+                <q-item-section>
+                  <div class="row items-center">
+                    {{ member.user.username }}
+                    <q-icon v-if="member.user.id === group.created_by.id" name="star" color="amber-6" size="xs"
+                      class="q-ml-xs" />
+                  </div>
+                </q-item-section>
+              </q-item>
+            </q-list>
+
+            <q-card-actions align="right" class="q-pt-none">
+              <q-btn label="Quitter le groupe" color="negative" icon="logout" @click="confirmLeaveGroup" />
+            </q-card-actions>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-12 col-md-8">
+        <div v-if="isAdmin">
+          <q-card bordered class="q-pa-md q-mb-md text-black">
+            <q-card-section class="q-card-section">
+              <div class="text-subtitle1 text-primary q-mb-md">Invitations</div>
+
+              <div class="q-mb-md">
+                <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm">
+                  <q-tooltip>
+                    Générer un lien d'invitation utilisable par n'importe qui. Une fois utilisé par un utilisateur, ce lien devient invalide.
+                  </q-tooltip>
+                </q-icon>
+                <strong>Invitation Générique :</strong>
+              </div>
+              <q-btn label="Générer un lien" color="secondary" @click="generateLink" />
+              <div v-if="inviteLink" class="q-mt-sm">
+                <q-input v-model="inviteLink" label="Lien généré" readonly outlined />
+                <q-btn label="Copier" color="primary" icon="content_copy" @click="copyLink" class="q-mt-sm" />
+              </div>
+
+              <q-separator spaced />
+
+              <div class="q-mb-md">
+                <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm">
+                  <q-tooltip>
+                    Générer un lien d'invitation utilisable uniquement par l'utilisateur spécifié dans le champs. Une fois utilisé ce lien devient invalide.
+                  </q-tooltip>
+                </q-icon>
+                <strong>Invitation Nominative :</strong>
+              </div>
+              <q-input v-model="inviteUsername" label="Nom d'utilisateur" outlined dense />
+              <q-btn label="Inviter" color="primary" @click="sendInvite" class="q-mt-sm" />
+            </q-card-section>
+          </q-card>
+
+          <q-card bordered class="q-pa-md q-mb-md text-black">
+            <q-card-section class="q-card-section">
+              <div class="text-subtitle1 text-primary q-mb-md">Créer une Room</div>
+              <q-input v-model="newRoomName" label="Nom de la Room" outlined dense />
+              <q-btn label="Créer" color="primary" @click="createRoom" class="q-mt-sm" />
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <q-card bordered class="q-pa-md">
+          <q-card-section class="q-card-section">
+            <div class="text-subtitle1 text-primary q-mb-md">Rooms du Groupe</div>
+            <q-list bordered separator>
+              <q-item v-for="room in group.rooms" :key="room.id" clickable @click="goToRoom(room)">
+                <q-item-section>
+                  <div class="text-bold">{{ room.name }}</div>
+                  <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
+                  <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}
+                  </div>
+                </q-item-section>
+                <q-item-section side>
+                  <q-icon name="arrow_forward" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
 
     <q-dialog v-model="confirmDialog">
       <q-card>
@@ -100,7 +117,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
   </q-page>
 </template>
 
@@ -209,8 +225,19 @@ async function createRoom() {
   }
 }
 
-// Redirection vers une room
 function goToRoom(room) {
   router.push(`/rooms/${room.id}`)
 }
 </script>
+
+<style scoped>
+.q-card {
+  background-color: #9EC8DB;
+}
+
+.q-card-section {
+  background-color: #ffffff;
+}
+
+
+</style>
