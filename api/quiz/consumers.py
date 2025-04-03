@@ -451,6 +451,7 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         url = f'https://quizzapi.jomoreschi.fr/api/v1/quiz?limit={limit}'
         if category:
             url += f"&category={category}"
+        print(url)
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(url) as response:
