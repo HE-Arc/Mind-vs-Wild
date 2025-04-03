@@ -124,7 +124,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { copyToClipboard, useQuasar, Notify } from 'quasar'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 import { useRoomStore } from '@/stores/room'
 
