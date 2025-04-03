@@ -1,37 +1,64 @@
 <template>
   <q-page class="q-pa-md">
     <div v-if="room" class="row q-col-gutter-md">
-      <!-- Colonne gauche: Infos de la room et liste d'attente -->
-      <div class="col-12 col-md-8">
-        <div class="text-center q-mb-md">
-          <h2 class="text-h5 text-white text-bold q-ma-none">{{ room.name }}</h2>
-          <div class="text-subtitle2 text-grey-7">Code: {{ room.code }}</div>
-        </div>
-
-        <!-- Liste d'attente des joueurs -->
-        <q-card class="waiting-room q-mb-md">
-            <q-card-section style="background-color: white;">
-            <div class="text-h6">Liste d'attente ({{ room.participants.length }})</div>
-            <div class="row q-col-gutter-sm">
-              <div v-for="p in room.participants" :key="p.id" class="col-6 col-sm-4 col-md-3">
-                <q-card class="player-card" :class="{ 'host-card': p.user.id === room.created_by.id }">
-                  <q-card-section class="text-center">
-                    <q-avatar size="50px" color="primary" text-color="white">
-                      {{ p.user.username.charAt(0).toUpperCase() }}
-                    </q-avatar>
-                    <div class="text-subtitle1 q-mt-sm">{{ p.user.username }}</div>
-                    <q-badge v-if="p.user.id === room.created_by.id" color="positive">Hôte</q-badge>
-                  </q-card-section>
-                </q-card>
-              </div>
-            </div>
+      <!-- Scores (toujours visible) -->
+      <div class="col-12">
+        <q-card class="scores-card text-black" style="background-color: white;">
+          <q-card-section>
+            <div class="text-h6">Scores</div>
+            <q-list>
+              <q-item v-for="(player, idx) in leaderboard" :key="idx" class="q-mb-sm">
+                <q-item-section avatar>
+                  <q-avatar :color="getPlayerColor(idx)" text-color="white">
+                    {{ player.username.charAt(0).toUpperCase() }}
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ player.username }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-chip :color="getPlayerColor(idx)" text-color="white" class="score-chip">
+                    {{ player.score }} pts
+                  </q-chip>
+                </q-item-section>
+              </q-item>
+            </q-list>
           </q-card-section>
         </q-card>
+      </div>
 
-        <!-- Configuration du jeu (visible uniquement pour l'hôte avant le début) -->
-        <q-slide-transition style="background-color: white;">
-          <div v-if="isHost && !currentQuestion">
-            <q-card class="config-card q-mb-md">
+      <!-- Contenu principal -->
+      <div class="col-12">
+        <!-- Afficher la salle d'attente uniquement si le jeu n'a pas commencé -->
+        <div v-if="!gameStarted">
+          <div class="text-center q-mb-md">
+            <h2 class="text-h5 text-white text-bold q-ma-none">{{ room.name }}</h2>
+            <div class="text-subtitle2 text-grey-7">Code: {{ room.code }}</div>
+          </div>
+
+          <!-- Liste d'attente des joueurs -->
+          <q-card class="waiting-room q-mb-md">
+            <q-card-section style="background-color: white;">
+              <div class="text-h6">Liste d'attente ({{ room.participants.length }})</div>
+              <div class="row q-col-gutter-sm">
+                <div v-for="p in room.participants" :key="p.id" class="col-6 col-sm-4 col-md-3">
+                  <q-card class="player-card" :class="{ 'host-card': p.user.id === room.created_by.id }">
+                    <q-card-section class="text-center">
+                      <q-avatar size="50px" color="primary" text-color="white">
+                        {{ p.user.username.charAt(0).toUpperCase() }}
+                      </q-avatar>
+                      <div class="text-subtitle1 q-mt-sm">{{ p.user.username }}</div>
+                      <q-badge v-if="p.user.id === room.created_by.id" color="positive">Hôte</q-badge>
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+
+          <!-- Configuration du jeu (visible uniquement pour l'hôte) -->
+          <q-slide-transition v-if="isHost">
+            <q-card class="config-card">
               <q-card-section>
                 <div class="text-h6">Configuration de la partie</div>
                 <q-toggle v-model="gameOptions.eliminationMode" label="Mode élimination" />
@@ -68,95 +95,29 @@
                 </div>
               </q-card-section>
             </q-card>
+          </q-slide-transition>
+
+          <!-- Message d'attente pour les non-admins -->
+          <div v-if="!isHost" class="text-center q-mt-md">
+            <q-card class="waiting-message">
+              <q-card-section>
+                <q-icon name="hourglass_empty" color="primary" size="48px" class="q-mb-md" />
+                <h6 class="text-h6 q-ma-none">En attente du lancement de la partie</h6>
+                <p class="text-subtitle1 q-ma-none">L'hôte de la partie configurera et lancera bientôt le jeu</p>
+              </q-card-section>
+            </q-card>
           </div>
-        </q-slide-transition>
-
-        <!-- Zone de quiz -->
-        <div v-if="currentQuestion" class="q-mt-md">
-          <q-card class="quiz-card">
-            <q-card-section>
-              <p class="text-h6">{{ currentQuestion.text }}</p>
-              <div v-if="timeLeft > 0" class="timer q-mb-md">
-                <q-linear-progress
-                  :value="timeLeft / maxTime"
-                  :color="timeLeft < 5 ? 'negative' : 'primary'"
-                  size="25px"
-                >
-                  <div class="absolute-full flex flex-center">
-                    <q-badge color="white" text-color="black" :label="`${timeLeft}s`" />
-                  </div>
-                </q-linear-progress>
-              </div>
-              <q-list bordered separator>
-                <q-item 
-                  v-for="option in currentQuestion.options" 
-                  :key="option.key"
-                  clickable
-                  :disable="answerSubmitted"
-                  @click="submitAnswer(currentQuestion.id, option)"
-                  :class="{
-                    'bg-positive': answerSubmitted && lastAnswer && lastAnswer.correct && lastAnswer.option.key === option.key,
-                    'bg-negative': answerSubmitted && !lastAnswer.correct && lastAnswer.option.key === option.key
-                  }"
-                >
-                  <q-item-section>
-                    <div class="row items-center">
-                      <div class="col-auto q-mr-sm text-weight-bold">{{ option.key }}:</div>
-                      <div class="col">{{ option.text }}</div>
-                    </div>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-card-section>
-          </q-card>
         </div>
 
-        <!-- Message d'attente pour les non-admins -->
-        <div v-if="!isHost && !currentQuestion" class="text-center q-mt-md">
-          <q-card class="waiting-message">
-            <q-card-section>
-              <q-icon name="hourglass_empty" color="primary" size="48px" class="q-mb-md" />
-              <h6 class="text-h6 q-ma-none">En attente du lancement de la partie</h6>
-              <p class="text-subtitle1 q-ma-none">L'hôte de la partie configurera et lancera bientôt le jeu</p>
-            </q-card-section>
-          </q-card>
-        </div>
-      </div>
-
-      <!-- Colonne droite: Scores -->
-      <div class="col-12 col-md-4">
-        <q-card class="scores-card" style="background-color: white;">
-          <q-card-section>
-            <div class="text-h6">Scores</div>
-            <q-list>
-              <q-item v-for="(player, idx) in leaderboard" :key="idx" class="q-mb-sm">
-                <q-item-section avatar>
-                  <q-avatar :color="getPlayerColor(idx)" text-color="white">
-                    {{ player.username.charAt(0).toUpperCase() }}
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ player.username }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-chip
-                    :color="getPlayerColor(idx)"
-                    text-color="white"
-                    class="score-chip"
-                  >
-                    {{ player.score }} pts
-                  </q-chip>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-        </q-card>
-
-        <q-btn 
-          color="negative" 
-          label="Quitter la Room" 
-          class="full-width q-mt-md" 
-          @click="leaveRoom" 
+        <quiz-view
+          v-else
+          :current-question="currentQuestion"
+          :time-left="timeLeft"
+          :max-time="maxTime"
+          :last-result="lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null"
+          :correct-answer="lastAnswer?.correctOption?.key"
+          :selected-answer="lastAnswer?.option?.key"
+          @submit-answer="submitAnswer"
         />
       </div>
     </div>
@@ -174,7 +135,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useRoomStore } from '@/stores/room'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/useAuthStore'
-
+import QuizView from './QuizView.vue'
 
 const route = useRoute()
 const router = useRouter()
