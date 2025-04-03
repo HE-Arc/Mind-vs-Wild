@@ -1,0 +1,9 @@
+[
+  { "value" : "tv_cinema", "label" : "TV & Cinéma"},
+  { "value" : "art_litterature", "label" : "Art & Littérature"},
+  { "value" : "musique", "label" : "Musique"},
+  { "value" : "jeux_videos", "label" : "Jeux Vidéo"},
+  { "value" : "culture_generale", "label" : "Culture Générale"},
+  { "value" : "sport", "label" : "Sport"},
+  { "value" : "actu_politique", "label" : "Actu & Politique"}
+]

@@ -111,6 +111,7 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                     question_count = max(1, min(30, int(options.get('questionCount', 5))))
                     timer_duration = max(10, min(60, int(options.get('questionTime', 30))))
                     elimination_mode = bool(options.get('eliminationMode', False))
+                    category = options.get("category")
                 except (ValueError, TypeError):
                     await self.send(json.dumps({
                         'error': 'Options de jeu invalides'
@@ -118,7 +119,7 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                     return
 
                 # Charger les questions
-                success = await self.load_questions_from_api(question_count)
+                success = await self.load_questions_from_api(question_count, category)
                 if not success:
                     await self.send(json.dumps({
                         'error': 'Impossible de charger les questions'
@@ -445,9 +446,12 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
             'final_scores': event['scores']
         }))
 
-    async def load_questions_from_api(self, limit=5):
+    async def load_questions_from_api(self, limit=5, category=None):
         """Charge les questions depuis l'API"""
         url = f'https://quizzapi.jomoreschi.fr/api/v1/quiz?limit={limit}'
+        if category:
+            url += f"&category={category}"
+        print(url)
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(url) as response:

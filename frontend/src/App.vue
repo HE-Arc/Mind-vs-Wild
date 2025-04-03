@@ -99,7 +99,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuthStore } from '@/stores/auth'
 import { useGroupStore } from '@/stores/group'
 
 const authStore = useAuthStore()

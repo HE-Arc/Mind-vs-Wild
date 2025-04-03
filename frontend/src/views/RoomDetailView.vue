@@ -90,6 +90,13 @@
                   label="Difficulté"
                   class="q-mt-md"
                 />
+                  
+              <q-select
+                v-model="gameOptions.category"
+                :options="categoryOptions"
+                label="Catégorie"
+                class="q-mt-md"
+              />
                 <div class="text-center q-mt-md">
                   <q-btn color="positive" label="Lancer la partie" @click="startGameWithOptions" />
                 </div>
@@ -134,7 +141,7 @@ import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRoomStore } from '@/stores/room'
 import { useQuasar } from 'quasar'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuthStore } from '@/stores/auth'
 import QuizView from './QuizView.vue'
 
 const route = useRoute()
@@ -165,10 +172,15 @@ let questionEndTime = 0
 
 // Host and game configuration
 const isHost = ref(false)
+const categories = ref([])
+const categoryOptions = computed(() =>
+  categories.value.map(category => ({ label: category.label, value: category.value }))
+)
 const gameOptions = ref({
   eliminationMode: false,
   questionTime: 30,
   difficulty: 'mixed',
+  category: null,
   questionCount: 10
 })
 
@@ -186,7 +198,8 @@ onMounted(async () => {
     
     // Vérifier si l'utilisateur actuel est l'hôte de la salle
     isHost.value = room.value?.created_by?.id === authStore.user?.id
-    
+    const response = await fetch('/categories.json');
+    categories.value = await response.json();
     // Établir la connexion WebSocket
     connectWebSocket()
   } catch (error) {
@@ -541,7 +554,10 @@ function startGameWithOptions() {
   // Envoi de la demande de démarrage du jeu
   socket.send(JSON.stringify({
     action: 'start_game',
-    options: gameOptions.value
+    options: {
+        ...gameOptions.value,
+        category: gameOptions.value.category?.value
+      }
   }))
   
   // Notification de démarrage
