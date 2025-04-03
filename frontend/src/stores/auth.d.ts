@@ -1,5 +1,7 @@
+// auth.d.ts
 declare module '@/stores/auth' {
-    const auth: any
-    export default auth
+    import { StoreDefinition } from 'pinia';
+  
+    export const useAuthStore: StoreDefinition;
   }
   
