@@ -365,25 +365,38 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         if not state:
             return
 
-        while state['time_remaining'] > 0:
-            await asyncio.sleep(1)
-            state['time_remaining'] -= 1
-
-            # Envoyer la mise à jour du timer
+        # Réduire la fréquence des mises à jour du timer pour diminuer le trafic réseau
+        # On n'envoie maintenant les mises à jour que toutes les 3 secondes au lieu de chaque seconde
+        update_interval = 3  
+        remaining_time = state['time_remaining']
+        
+        while remaining_time > 0:
+            for _ in range(min(update_interval, remaining_time)):
+                await asyncio.sleep(1)
+                remaining_time -= 1
+                state['time_remaining'] = remaining_time
+                
+                # Vérifier si tous les joueurs ont répondu
+                if len(state['answered'].intersection(state['active_players'])) >= len(state['active_players']):
+                    break
+        
+            # Si tous les joueurs ont répondu, on sort de la boucle
+            if len(state['answered'].intersection(state['active_players'])) >= len(state['active_players']):
+                break
+                
+            # Envoyer la mise à jour du timer moins fréquemment
+            # Les clients gèrent leur propre timer localement, donc nous n'avons pas besoin 
+            # d'envoyer des mises à jour trop fréquentes
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': 'broadcast_timer',
-                    'time_remaining': state['time_remaining']
+                    'time_remaining': remaining_time
                 }
             )
 
-            # Vérifier si tous les joueurs ont répondu
-            if len(state['answered'].intersection(state['active_players'])) >= len(state['active_players']):
-                break
-
         # Si le temps est écoulé ou tous ont répondu, passer à la suivante
-        if state['time_remaining'] <= 0:
+        if remaining_time <= 0:
             await self.send_next_question()
 
     async def broadcast_timer(self, event):

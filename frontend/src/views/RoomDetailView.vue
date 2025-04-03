@@ -198,6 +198,10 @@ const lastAnswer = ref(null)
 const timeLeft = ref(0)
 const maxTime = ref(30)
 
+// Timer variables
+let timerInterval = null
+let questionEndTime = 0
+
 // Host and game configuration
 const isHost = ref(false)
 const gameOptions = ref({
@@ -234,6 +238,12 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  // Arrêter le timer local
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+  
   // Fermer proprement la connexion WebSocket lors de la sortie du composant
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close()
@@ -241,6 +251,12 @@ onUnmounted(() => {
 })
 
 function leaveRoom() {
+  // Arrêter le timer
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+  
   // Fermer la connexion WebSocket avant de quitter
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close()
@@ -339,7 +355,7 @@ function connectWebSocket() {
           handleNewQuestion(data)
           break
         case 'timer_update':
-          timeLeft.value = data.time_remaining
+          handleTimerUpdate(data)
           break
         case 'scores_update':
           handleScoresUpdate(data)
@@ -387,13 +403,24 @@ function handleGameState(data) {
 
 function handleGameStarting(data) {
   isGameStarting.value = true
+  
   // Mettre à jour les options du jeu avec les paramètres reçus
   if (data.settings) {
-    gameOptions.value = {
-      ...gameOptions.value,
-      ...data.settings
+    // Stocker le timer_duration configuré pour l'utiliser plus tard
+    if (data.settings.timer_duration) {
+      gameOptions.value.questionTime = data.settings.timer_duration
+    }
+    
+    // Autres options
+    if (data.settings.question_count) {
+      gameOptions.value.questionCount = data.settings.question_count
+    }
+    
+    if (data.settings.elimination_mode !== undefined) {
+      gameOptions.value.eliminationMode = data.settings.elimination_mode
     }
   }
+  
   $q.notify({
     type: 'info',
     message: 'La partie va bientôt commencer...'
@@ -430,17 +457,64 @@ function handleNewQuestion(data) {
   gameStarted.value = true
   isGameStarting.value = false
   currentQuestion.value = data.question
-  timeLeft.value = data.time_remaining
-  maxTime.value = data.time_remaining
-  answerSubmitted.value = false
-  lastAnswer.value = null
+  
+  // Définir le temps maximal selon la configuration de la room
+  const configuredTime = gameOptions.value.questionTime;
+  maxTime.value = configuredTime;
+  
+  // Réinitialiser l'UI
+  answerSubmitted.value = false;
+  lastAnswer.value = null;
+  
+  // Démarrer un timer purement local
+  startLocalTimer(configuredTime);
+  
+  console.log(`Nouvelle question: temps configuré=${configuredTime}s`);
 }
 
-function handleScoresUpdate(data) {
-  leaderboard.value = data.scores
+function handleTimerUpdate(data) {
+  // Ne rien faire - on laisse le timer local gérer le temps
+  // On ne fait que logger l'information pour le débogage
+  console.log(`Timer serveur: ${data.time_remaining}s, timer local: ${timeLeft.value}s`);
 }
 
+// Fonction pour démarrer un timer local fluide
+function startLocalTimer(initialTime) {
+  // Nettoyer tout timer existant
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+  
+  // Calculer le moment précis où le timer se terminera
+  questionEndTime = Date.now() + (initialTime * 1000)
+  timeLeft.value = initialTime
+  
+  // Créer un intervalle pour mettre à jour le timer toutes les 100ms (pour une animation fluide)
+  timerInterval = setInterval(() => {
+    // Calculer le temps restant en secondes
+    const remainingMs = questionEndTime - Date.now()
+    const remainingSecs = Math.ceil(remainingMs / 1000)
+    
+    // Mettre à jour le temps restant
+    if (remainingSecs <= 0) {
+      timeLeft.value = 0
+      clearInterval(timerInterval)
+      timerInterval = null
+    } else {
+      timeLeft.value = remainingSecs
+    }
+  }, 100)
+}
+
+// Nettoyer le timer lors de la fin de partie
 function handleGameOver(data) {
+  // Arrêter le timer
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+  
   gameStarted.value = false
   currentQuestion.value = null
   leaderboard.value = data.final_scores
@@ -451,7 +525,16 @@ function handleGameOver(data) {
   })
 }
 
-// Ajouter un gestionnaire pour l'événement "answer_result"
+function handleScoresUpdate(data) {
+  // Mettre à jour le tableau des scores avec les données du serveur
+  leaderboard.value = data.scores.map(playerScore => ({
+    id: playerScore.user_id,
+    username: playerScore.username,
+    score: playerScore.score,
+    isActive: playerScore.is_active
+  }))
+}
+
 function handleAnswerResult(data) {
   answerSubmitted.value = true
   lastAnswer.value = {
@@ -474,7 +557,7 @@ function getPlayerUsername(userId) {
   return participant?.user.username || "Joueur inconnu"
 }
 
-// Fonction corrigée pour démarrer le jeu (uniquement pour l'hôte)
+// Fonction pour démarrer le jeu (uniquement pour l'hôte)
 function startGameWithOptions() {
   // Vérification que l'utilisateur est bien l'hôte
   if (!isHost.value) {
