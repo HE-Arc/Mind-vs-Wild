@@ -117,7 +117,7 @@
         <!-- Questions au centre -->
         <quiz-view :current-question="currentQuestion" :time-left="timeLeft" :max-time="maxTime"
           :last-result="lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null"
-          :correct-answer="lastAnswer?.correctOption?.key" :selected-answer="lastAnswer?.option?.key"
+          :correct-answer="lastAnswer?.correctOption" :selected-answer="lastAnswer?.option"
           @submit-answer="submitAnswer" />
       </div>
     </div>
@@ -576,7 +576,7 @@ function submitAnswer(questionId, option) {
   socket.send(JSON.stringify({
     action: 'submit_answer',
     question_id: questionId,
-    answer: option.key
+    answer: option
   }))
 }
 

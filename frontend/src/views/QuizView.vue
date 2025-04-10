@@ -21,22 +21,22 @@
 
         <div v-if="currentQuestion" class="answer">
             <div class="column left-column">
-                <q-card v-for="answer in leftAnswers" :key="answer.key" class="card-spacing" :class="{
-                    'correct-answer': lastResult === 'correct' && answer.key === selectedAnswer,
-                    'wrong-answer': lastResult === 'incorrect' && answer.key === selectedAnswer
+                <q-card v-for="answer in leftAnswers" class="card-spacing" :class="{
+                    'correct-answer': lastResult === 'correct' && answer === selectedAnswer,
+                    'wrong-answer': lastResult === 'incorrect' && answer === selectedAnswer
                 }" @click="onAnswerClick(currentQuestion.id, answer)">
                     <q-card-section class="q-pa-none card-answer">
-                        {{ answer.text }}
+                        {{ answer }}
                     </q-card-section>
                 </q-card>
             </div>
             <div class="column right-column">
-                <q-card v-for="answer in rightAnswers" :key="answer.key" class="card-spacing" :class="{
-                    'correct-answer': lastResult === 'correct' && answer.key === selectedAnswer,
-                    'wrong-answer': lastResult === 'incorrect' && answer.key === selectedAnswer
+                <q-card v-for="answer in rightAnswers" class="card-spacing" :class="{
+                    'correct-answer': lastResult === 'correct' && answer === selectedAnswer,
+                    'wrong-answer': lastResult === 'incorrect' && answer === selectedAnswer
                 }" @click="onAnswerClick(currentQuestion.id, answer)">
                     <q-card-section class="q-pa-none card-answer">
-                        {{ answer.text }}
+                        {{ answer }}
                     </q-card-section>
                 </q-card>
             </div>
