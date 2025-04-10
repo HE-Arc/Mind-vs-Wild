@@ -114,6 +114,7 @@
               </q-card-section>
             </q-card>
           </div>
+          <q-btn color="negative" label="Quitter la Room" class="q-mt-md" @click="leaveRoom" />
         </div>
 
         <quiz-view
