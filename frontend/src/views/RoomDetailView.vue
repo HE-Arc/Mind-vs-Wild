@@ -4,10 +4,7 @@
           <h2 class="text-h5 text-white text-bold q-ma-none">{{ room?.name || 'Salle inconnue' }}</h2>
     </div>
     <div v-if="room" class="row q-col-gutter-md">
-      <!-- Colonne gauche : Liste des utilisateurs -->
       <div v-if="!gameStarted" class="col-12 col-md-6">
-        <!-- Afficher la salle d'attente uniquement si le jeu n'a pas commencé -->
-        <!-- Liste d'attente des joueurs -->
         <q-card class="waiting-room q-mb-md text-white">
           <q-card-section class="q-card-section">
             <div class="text-h6">Liste d'attente ({{ room.participants.length }})</div>
@@ -16,7 +13,7 @@
                 <q-card class="player-card" :class="{ 'host-card': p.user.id === room.created_by.id }">
                   <q-card-section class="text-center">
                     <q-avatar size="50px" color="primary" text-color="white">
-                      <img :src="authStore.user?.avatar_url" :alt="authStore.user?.username" />
+                      {{ p.user.username.charAt(0).toUpperCase() }}
                     </q-avatar>
                     <div class="text-subtitle1 q-mt-sm">{{ p.user.username }}</div>
                     <q-badge v-if="p.user.id === room.created_by.id" color="positive">Hôte</q-badge>
@@ -27,7 +24,6 @@
           </q-card-section>
         </q-card>
 
-        <!-- Afficher les scores si la partie est terminée -->
         <q-card v-if="leaderboard.length > 0 && !gameStarted" class="scores-card text-white q-mb-md">
           <q-card-section class="q-card-section">
             <div class="text-h6">Scores finaux</div>
@@ -52,10 +48,8 @@
         </q-card>
       </div>
 
-      <!-- Colonne droite : Options de personnalisation -->
       <div v-if="!gameStarted" class="col-12 col-md-6">
         <div>
-          <!-- Configuration du jeu (visible uniquement pour l'hôte) -->
           <q-slide-transition v-if="isHost">
             <q-card class="config-card text-white">
               <q-card-section class="q-card-section">
@@ -83,10 +77,9 @@
             </q-card>
           </q-slide-transition>
 
-          <!-- Message d'attente pour les non-admins -->
           <div v-if="!isHost" class="text-center q-mt-md">
-            <q-card class="waiting-message">
-              <q-card-section>
+            <q-card class="waiting-message text-white">
+              <q-card-section class="q-card-section">
                 <q-icon name="hourglass_empty" color="primary" size="48px" class="q-mb-md" />
                 <h6 class="text-h6 q-ma-none">En attente du lancement de la partie</h6>
                 <p class="text-subtitle1 q-ma-none">L'hôte de la partie configurera et lancera bientôt le jeu</p>
@@ -97,9 +90,7 @@
         </div>
       </div>
 
-      <!-- Section centrale : Questions et scores -->
       <div v-else class="col-12">
-        <!-- Scores en haut -->
         <q-card v-if="leaderboard.length > 0" class="scores-card text-white q-mb-md">
           <q-card-section class="q-card-section">
             <div class="text-h6">Scores</div>

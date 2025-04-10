@@ -1,52 +1,81 @@
 <template>
-  <q-page class="q-pa-md row">
-    <div class="col-8">
-      <div v-if="rooms.length">
-        <h2>Rooms publiques</h2>
-        <q-list bordered separator>
-          <q-item v-for="room in publicRooms" :key="room.id" clickable @click="joinRoom(room.id)">
-            <q-item-section>
-              <div>{{ room.name }}</div>
-              <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
-              <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
-            </q-item-section>
-          </q-item>
-        </q-list>
-        <h2>Rooms de groupes</h2>
-        <q-list bordered separator>
-          <q-item v-for="room in groupRooms" :key="room.id" clickable @click="joinRoom(room.id)">
-            <q-item-section>
-              <div>{{ room.name }}</div>
-              <div class="text-subtitle2 text-grey">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
-              <div class="text-subtitle2 text-grey">Participants: {{ room.participants.length }}</div>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-      <div v-else class="text-center q-mt-md">
-        <p>Aucune room disponible</p>
+  <q-page class="q-pa-md">
+    <div class="row items-center justify-between q-mb-md">
+      <h2 class="q-ma-none text-white">Liste des Rooms</h2>
+      <q-btn 
+        color="primary" 
+        icon="add" 
+        label="Créer une Room" 
+        @click="showCreateModal = true"
+      />
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div v-if="rooms.length">
+          <h2 class="text-white">Rooms publiques</h2>
+          <div class="row q-col-gutter-md q-mt-xs">
+            <div v-for="room in publicRooms" :key="room.id" class="col-12 col-sm-6">
+              <q-card class="cursor-pointer text-white q-card" @click="joinRoom(room.id)">
+                <q-card-section class="q-card-section ">
+                  <div class="text-h6">{{ room.name }}</div>
+                  <div class="text-subtitle2">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
+                  <div class="text-subtitle2">
+                    <q-icon name="people" /> {{ room.participants.length }} participants
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
+
+          <h2 class="q-mt-lg text-white">Rooms de groupes</h2>
+          <div class="row q-col-gutter-md q-mt-xs">
+            <div v-for="room in groupRooms" :key="room.id" class="col-12 col-sm-6">
+              <q-card class="cursor-pointer q-card text-white" @click="joinRoom(room.id)">
+                <q-card-section class="q-card-section ">
+                  <div class="text-h6">{{ room.name }}</div>
+                  <div class="text-subtitle2">Créé le: {{ new Date(room.created_at).toLocaleDateString() }}</div>
+                  <div class="text-subtitle2">
+                    <q-icon name="people" /> {{ room.participants.length }} participants
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
+        </div>
+        <div v-else class="text-center q-mt-md">
+          <p>Aucune room disponible</p>
+        </div>
       </div>
     </div>
-    <div class="col-4">
-      <q-form @submit.prevent="createPublicRoom">
-        <q-card>
-          <q-card-section>
-            <h3>Créer une Room publique</h3>
-          </q-card-section>
+
+    <q-dialog v-model="showCreateModal">
+      <q-card style="width: 500px; max-width: 90vw;">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Créer une Room publique</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-form @submit.prevent="createPublicRoom">
           <q-card-section>
             <q-input 
               v-model="newRoomName" 
               label="Nom de la Room" 
               outlined 
-              :placeholder="`Room de ${username}`" 
+              :placeholder="`Room de ${username}`"
+              class="q-mb-md"
+              bg-color="white"
             />
           </q-card-section>
+
           <q-card-actions align="right">
+            <q-btn label="Annuler" flat v-close-popup />
             <q-btn label="Créer" color="primary" type="submit" />
           </q-card-actions>
-        </q-card>
-      </q-form>
-    </div>
+        </q-form>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -62,6 +91,7 @@ const router = useRouter()
 const rooms = ref([])
 const message = ref('')
 const $q = useQuasar()
+const showCreateModal = ref(false)
 
 onMounted(async () => {
   await roomStore.fetchRooms()
@@ -81,6 +111,7 @@ const newRoomName = ref('')
 const createPublicRoom = async () => {
   const roomName = newRoomName.value || `Room de ${username.value}`
   const room = await roomStore.createRoom(roomName)
+  showCreateModal.value = false
   router.push(`/rooms/${room.id}`)
   newRoomName.value = ''
 }
@@ -101,3 +132,13 @@ const joinRoom = async (id) => {
   }
 }
 </script>
+
+<style scoped>
+.q-card {
+  background-color: #2c2c38;
+}
+
+.q-card-section {
+  background-color: #2c2c38;
+}
+</style>
