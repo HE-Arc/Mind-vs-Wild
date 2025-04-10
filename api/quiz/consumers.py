@@ -317,6 +317,9 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         state = GAME_STATE.get(self.room_id)
         if not state:
             return
+                
+        if(state['current_index'] >= 0):
+            await asyncio.sleep(3)
         
         state['current_index'] += 1
         if state['current_index'] >= len(state['questions']):
