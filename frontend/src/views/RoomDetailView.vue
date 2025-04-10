@@ -1,10 +1,19 @@
 <template>
   <q-page class="q-pa-md">
     <div v-if="room" class="row q-col-gutter-md">
-      <!-- Scores (toujours visible) -->
+
+      <!-- Contenu principal -->
       <div class="col-12">
-        <q-card class="scores-card text-white" style="background-color: white;">
-          <q-card-section class="q-card-section">
+        <!-- Afficher la salle d'attente uniquement si le jeu n'a pas commencé -->
+        <div v-if="!gameStarted">
+          <div class="text-center q-mb-md">
+            <h2 class="text-h5 text-white text-bold q-ma-none">{{ room.name }}</h2>
+          </div>
+        </div>
+
+        <!-- Scores -->
+        <q-card v-if="leaderboard.length > 0" class="scores-card text-black" style="background-color: white;">
+          <q-card-section>
             <div class="text-h6">Scores</div>
             <q-list>
               <q-item v-for="(player, idx) in leaderboard" :key="idx" class="q-mb-sm">
@@ -25,17 +34,8 @@
             </q-list>
           </q-card-section>
         </q-card>
-      </div>
 
-      <!-- Contenu principal -->
-      <div class="col-12">
-        <!-- Afficher la salle d'attente uniquement si le jeu n'a pas commencé -->
         <div v-if="!gameStarted">
-          <div class="text-center q-mb-md">
-            <h2 class="text-h5 text-white text-bold q-ma-none">{{ room.name }}</h2>
-            <div class="text-subtitle2 text-grey-7">Code: {{ room.code }}</div>
-          </div>
-
           <!-- Liste d'attente des joueurs -->
           <q-card class="waiting-room q-mb-md text-white">
             <q-card-section class="q-card-section">
@@ -94,6 +94,7 @@
               </q-card-section>
             </q-card>
           </div>
+          <q-btn color="negative" label="Quitter la Room" class="q-mt-md" @click="leaveRoom" />
         </div>
 
         <quiz-view v-else :current-question="currentQuestion" :time-left="timeLeft" :max-time="maxTime"
