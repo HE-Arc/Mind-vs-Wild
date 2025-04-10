@@ -117,7 +117,7 @@
         <!-- Questions au centre -->
         <quiz-view :current-question="currentQuestion" :time-left="timeLeft" :max-time="maxTime"
           :last-result="lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null"
-          :correct-answer="lastAnswer?.correctOption?.key" :selected-answer="lastAnswer?.option?.key"
+          :correct-answer="lastAnswer?.correctOption" :selected-answer="lastAnswer?.option"
           @submit-answer="submitAnswer" />
       </div>
     </div>
@@ -509,13 +509,6 @@ function handleAnswerResult(data) {
     correct: data.correct,
     correctOption: data.correct_option
   }
-
-  // Notification du résultat
-  $q.notify({
-    type: data.correct ? 'positive' : 'negative',
-    message: data.correct ? 'Bonne réponse !' : 'Mauvaise réponse !',
-    timeout: 2000
-  })
 }
 
 // Fonction pour récupérer le nom d'utilisateur à partir de l'ID
@@ -576,7 +569,7 @@ function submitAnswer(questionId, option) {
   socket.send(JSON.stringify({
     action: 'submit_answer',
     question_id: questionId,
-    answer: option.key
+    answer: option
   }))
 }
 

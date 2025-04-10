@@ -128,7 +128,6 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
 
                 # Initialiser l'état du jeu
                 participant_ids = await self.get_room_participants(self.room_id)
-                
                 GAME_STATE[self.room_id] = {
                     'questions': self.questions,
                     'current_index': -1,
@@ -167,7 +166,7 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
 
                 current_q = state['questions'][state['current_index']]
                 question_id = data.get('question_id')
-                answer = data.get('answer')  # Maintenant on reçoit la clé (A, B, C, D)
+                answer = data.get('answer')  # Maintenant on reçoit directement le texte de la réponse
                 
                 # Récupérer la question actuelle
                 if state['current_index'] < 0 or state['current_index'] >= len(state['questions']):
@@ -176,21 +175,17 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                 current_q = state['questions'][state['current_index']]
                 formatted_q = self.format_question(current_q)
                 
-                # Trouver l'option correspondant à la clé fournie
-                selected_option = None
+                # Trouver l'option correcte pour l'envoyer dans la réponse
                 correct_option = None
                 for option in formatted_q['options']:
-                    if option['key'] == answer:
-                        selected_option = option
-                    # Trouver aussi l'option correcte pour l'envoyer dans la réponse
-                    if option['text'].lower() == current_q['answer'].lower():
+                    if option.lower() == current_q['answer'].lower():
                         correct_option = option
                 
-                if not selected_option:
+                if not answer:
                     return
                 
                 # Vérifier la réponse
-                is_correct = selected_option['text'].lower() == current_q['answer'].lower()
+                is_correct = answer.lower() == current_q['answer'].lower()
                 
                 # Mettre à jour le score
                 if is_correct:
@@ -204,7 +199,7 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({
                     'action': 'answer_result',
                     'correct': is_correct,
-                    'selected_option': selected_option,
+                    'selected_option': answer,
                     'correct_option': correct_option,
                     'points': state['scores'].get(self.user.id, 0)
                 }))
@@ -233,18 +228,13 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         if not question:
             return None
             
-        options = [
-            {'key': 'A', 'text': question['answer']},
-            {'key': 'B', 'text': question['badAnswers'][0]},
-            {'key': 'C', 'text': question['badAnswers'][1]},
-            {'key': 'D', 'text': question['badAnswers'][2]}
-        ]
-        random.shuffle(options)
+        answers = [question['answer']] + question['badAnswers']
+        random.shuffle(answers)
 
         return {
             'id': question['_id'],
             'text': question['question'],
-            'options': options
+            'options': answers,
         }
 
     async def broadcast_scores(self):
@@ -327,7 +317,10 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         state = GAME_STATE.get(self.room_id)
         if not state:
             return
-
+                
+        if(state['current_index'] >= 0):
+            await asyncio.sleep(3)
+        
         state['current_index'] += 1
         if state['current_index'] >= len(state['questions']):
             await self.end_game()
@@ -451,7 +444,6 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         url = f'https://quizzapi.jomoreschi.fr/api/v1/quiz?limit={limit}'
         if category:
             url += f"&category={category}"
-        print(url)
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(url) as response:
