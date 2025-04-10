@@ -3,8 +3,8 @@
     <div v-if="room" class="row q-col-gutter-md">
       <!-- Scores (toujours visible) -->
       <div class="col-12">
-        <q-card class="scores-card text-black" style="background-color: white;">
-          <q-card-section>
+        <q-card class="scores-card text-white" style="background-color: white;">
+          <q-card-section class="q-card-section">
             <div class="text-h6">Scores</div>
             <q-list>
               <q-item v-for="(player, idx) in leaderboard" :key="idx" class="q-mb-sm">
@@ -37,15 +37,15 @@
           </div>
 
           <!-- Liste d'attente des joueurs -->
-          <q-card class="waiting-room q-mb-md">
-            <q-card-section style="background-color: white;">
+          <q-card class="waiting-room q-mb-md text-white">
+            <q-card-section class="q-card-section">
               <div class="text-h6">Liste d'attente ({{ room.participants.length }})</div>
               <div class="row q-col-gutter-sm">
                 <div v-for="p in room.participants" :key="p.id" class="col-6 col-sm-4 col-md-3">
                   <q-card class="player-card" :class="{ 'host-card': p.user.id === room.created_by.id }">
                     <q-card-section class="text-center">
                       <q-avatar size="50px" color="primary" text-color="white">
-                        {{ p.user.username.charAt(0).toUpperCase() }}
+                        <img :src="authStore.user?.avatar_url" :alt="authStore.user?.username" />
                       </q-avatar>
                       <div class="text-subtitle1 q-mt-sm">{{ p.user.username }}</div>
                       <q-badge v-if="p.user.id === room.created_by.id" color="positive">Hôte</q-badge>
@@ -58,45 +58,25 @@
 
           <!-- Configuration du jeu (visible uniquement pour l'hôte) -->
           <q-slide-transition v-if="isHost">
-            <q-card class="config-card">
-              <q-card-section>
+            <q-card class="config-card text-white">
+              <q-card-section class="q-card-section">
                 <div class="text-h6">Configuration de la partie</div>
                 <q-toggle v-model="gameOptions.eliminationMode" label="Mode élimination" />
-                <q-select
-                  v-model="gameOptions.questionCount"
-                  :options="[5, 10, 15, 20, 25, 30]"
-                  label="Nombre de questions"
-                  class="q-mb-md"
-                />
-                <q-slider
-                  v-model="gameOptions.questionTime"
-                  :min="10"
-                  :max="60"
-                  :step="5"
-                  label
-                  label-always
-                >
+                <q-select bg-color="white" outlined v-model="gameOptions.questionCount" :options="[5, 10, 15, 20, 25, 30]"
+                  label="Nombre de questions" class="q-mb-md" popup-content-class="text-black" />
+                <q-slider v-model="gameOptions.questionTime" :min="10" :max="60" :step="5" label label-always color="green">
                   <template v-slot:thumb-label>{{ gameOptions.questionTime }}s</template>
                 </q-slider>
                 <div class="text-caption">Temps par question</div>
-                <q-select
-                  v-model="gameOptions.difficulty"
-                  :options="[
-                    { label: 'Facile', value: 'easy' },
-                    { label: 'Moyen', value: 'medium' },
-                    { label: 'Difficile', value: 'hard' },
-                    { label: 'Mixte', value: 'mixed' }
-                  ]"
-                  label="Difficulté"
-                  class="q-mt-md"
-                />
-                  
-              <q-select
-                v-model="gameOptions.category"
-                :options="categoryOptions"
-                label="Catégorie"
-                class="q-mt-md"
-              />
+                <q-select bg-color="white" outlined v-model="gameOptions.difficulty" :options="[
+                  { label: 'Facile', value: 'easy' },
+                  { label: 'Moyen', value: 'medium' },
+                  { label: 'Difficile', value: 'hard' },
+                  { label: 'Mixte', value: 'mixed'}
+                ]" label="Difficulté" class="q-mt-md" popup-content-class="text-black"/>
+
+                <q-select bg-color="white" outlined v-model="gameOptions.category" :options="categoryOptions"
+                  label="Catégorie" class="q-mt-md" popup-content-class="text-black"/>
                 <div class="text-center q-mt-md">
                   <q-btn color="positive" label="Lancer la partie" @click="startGameWithOptions" />
                 </div>
@@ -116,16 +96,10 @@
           </div>
         </div>
 
-        <quiz-view
-          v-else
-          :current-question="currentQuestion"
-          :time-left="timeLeft"
-          :max-time="maxTime"
+        <quiz-view v-else :current-question="currentQuestion" :time-left="timeLeft" :max-time="maxTime"
           :last-result="lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null"
-          :correct-answer="lastAnswer?.correctOption?.key"
-          :selected-answer="lastAnswer?.option?.key"
-          @submit-answer="submitAnswer"
-        />
+          :correct-answer="lastAnswer?.correctOption?.key" :selected-answer="lastAnswer?.option?.key"
+          @submit-answer="submitAnswer" />
       </div>
     </div>
 
@@ -192,10 +166,10 @@ onMounted(async () => {
   const id = route.params.id
   try {
     room.value = await roomStore.fetchRoomDetails(id)
-    if(message.value) {
+    if (message.value) {
       $q.notify({ type: 'positive', message: message.value })
     }
-    
+
     // Vérifier si l'utilisateur actuel est l'hôte de la salle
     isHost.value = room.value?.created_by?.id === authStore.user?.id
     const response = await fetch('/categories.json');
@@ -204,9 +178,9 @@ onMounted(async () => {
     connectWebSocket()
   } catch (error) {
     console.error('Erreur lors du chargement de la room:', error)
-    $q.notify({ 
-      type: 'negative', 
-      message: 'Impossible de charger les détails de la room' 
+    $q.notify({
+      type: 'negative',
+      message: 'Impossible de charger les détails de la room'
     })
   }
 })
@@ -217,7 +191,7 @@ onUnmounted(() => {
     clearInterval(timerInterval)
     timerInterval = null
   }
-  
+
   // Fermer proprement la connexion WebSocket lors de la sortie du composant
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close()
@@ -230,12 +204,12 @@ function leaveRoom() {
     clearInterval(timerInterval)
     timerInterval = null
   }
-  
+
   // Fermer la connexion WebSocket avant de quitter
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close()
   }
-  
+
   roomStore.leaveRoom().then(() => {
     router.push('/rooms')
   })
@@ -247,10 +221,10 @@ function connectWebSocket() {
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return
   }
-  
+
   wsStatus.value = 'connecting'
   wsError.value = null
-  
+
   const token = authStore.token
   if (!token) {
     wsError.value = "Utilisateur non authentifié"
@@ -273,8 +247,8 @@ function connectWebSocket() {
       console.error("WebSocket error", err)
       wsError.value = "Erreur de connexion WebSocket"
       wsStatus.value = 'error'
-      $q.notify({ 
-        type: 'negative', 
+      $q.notify({
+        type: 'negative',
         message: 'Erreur de connexion au serveur de jeu',
         actions: [{
           label: 'Reconnecter',
@@ -288,7 +262,7 @@ function connectWebSocket() {
       console.log("WebSocket fermé")
       wsStatus.value = 'disconnected'
       socket = null
-      
+
       // Proposer une reconnexion manuelle, pas de boucle
       if (room.value) {
         $q.notify({
@@ -347,8 +321,8 @@ function connectWebSocket() {
     console.error('Erreur lors de la création du WebSocket:', err)
     wsError.value = "Erreur lors de la création de la connexion"
     wsStatus.value = 'error'
-    $q.notify({ 
-      type: 'negative', 
+    $q.notify({
+      type: 'negative',
       message: 'Impossible de se connecter au serveur de jeu',
       actions: [{
         label: 'Réessayer',
@@ -377,24 +351,24 @@ function handleGameState(data) {
 
 function handleGameStarting(data) {
   isGameStarting.value = true
-  
+
   // Mettre à jour les options du jeu avec les paramètres reçus
   if (data.settings) {
     // Stocker le timer_duration configuré pour l'utiliser plus tard
     if (data.settings.timer_duration) {
       gameOptions.value.questionTime = data.settings.timer_duration
     }
-    
+
     // Autres options
     if (data.settings.question_count) {
       gameOptions.value.questionCount = data.settings.question_count
     }
-    
+
     if (data.settings.elimination_mode !== undefined) {
       gameOptions.value.eliminationMode = data.settings.elimination_mode
     }
   }
-  
+
   $q.notify({
     type: 'info',
     message: 'La partie va bientôt commencer...'
@@ -431,18 +405,18 @@ function handleNewQuestion(data) {
   gameStarted.value = true
   isGameStarting.value = false
   currentQuestion.value = data.question
-  
+
   // Définir le temps maximal selon la configuration de la room
   const configuredTime = gameOptions.value.questionTime;
   maxTime.value = configuredTime;
-  
+
   // Réinitialiser l'UI
   answerSubmitted.value = false;
   lastAnswer.value = null;
-  
+
   // Démarrer un timer purement local
   startLocalTimer(configuredTime);
-  
+
   console.log(`Nouvelle question: temps configuré=${configuredTime}s`);
 }
 
@@ -459,17 +433,17 @@ function startLocalTimer(initialTime) {
     clearInterval(timerInterval)
     timerInterval = null
   }
-  
+
   // Calculer le moment précis où le timer se terminera
   questionEndTime = Date.now() + (initialTime * 1000)
   timeLeft.value = initialTime
-  
+
   // Créer un intervalle pour mettre à jour le timer toutes les 100ms (pour une animation fluide)
   timerInterval = setInterval(() => {
     // Calculer le temps restant en secondes
     const remainingMs = questionEndTime - Date.now()
     const remainingSecs = Math.ceil(remainingMs / 1000)
-    
+
     // Mettre à jour le temps restant
     if (remainingSecs <= 0) {
       timeLeft.value = 0
@@ -488,7 +462,7 @@ function handleGameOver(data) {
     clearInterval(timerInterval)
     timerInterval = null
   }
-  
+
   gameStarted.value = false
   currentQuestion.value = null
   leaderboard.value = data.final_scores
@@ -516,7 +490,7 @@ function handleAnswerResult(data) {
     correct: data.correct,
     correctOption: data.correct_option
   }
-  
+
   // Notification du résultat
   $q.notify({
     type: data.correct ? 'positive' : 'negative',
@@ -541,7 +515,7 @@ function startGameWithOptions() {
     })
     return
   }
-  
+
   // Vérification de la connexion WebSocket
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     $q.notify({
@@ -550,16 +524,16 @@ function startGameWithOptions() {
     })
     return
   }
-  
+
   // Envoi de la demande de démarrage du jeu
   socket.send(JSON.stringify({
     action: 'start_game',
     options: {
-        ...gameOptions.value,
-        category: gameOptions.value.category?.value
-      }
+      ...gameOptions.value,
+      category: gameOptions.value.category?.value
+    }
   }))
-  
+
   // Notification de démarrage
   $q.notify({
     type: 'positive',
@@ -576,10 +550,10 @@ function submitAnswer(questionId, option) {
     })
     return
   }
-  
+
   answerSubmitted.value = true
   lastAnswer.value = { option, correct: false }
-  
+
   socket.send(JSON.stringify({
     action: 'submit_answer',
     question_id: questionId,
@@ -597,12 +571,15 @@ function getPlayerColor(index) {
 <style lang="scss">
 .waiting-room {
   background: rgba(255, 255, 255, 0.05);
+
   .player-card {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(44, 109, 249, 0.078);
     transition: all 0.3s ease;
+
     &:hover {
       transform: translateY(-2px);
     }
+
     &.host-card {
       border: 2px solid var(--q-positive);
     }
@@ -613,6 +590,10 @@ function getPlayerColor(index) {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.q-card-section {
+  background-color: #2c2c38;
+}
+
 .quiz-card {
   background: rgba(255, 255, 255, 0.05);
 }
@@ -621,6 +602,7 @@ function getPlayerColor(index) {
   background: rgba(255, 255, 255, 0.05);
   position: sticky;
   top: 16px;
+
   .score-chip {
     min-width: 80px;
     justify-content: center;
