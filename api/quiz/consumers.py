@@ -117,7 +117,8 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                 "timer_duration": qtime,
                 "elimination_mode": elimination
             }
-        })
+        })        
+        await self.broadcast_scores()
         await self.send_next_question()
 
     async def handle_submit_answer(self, data):
