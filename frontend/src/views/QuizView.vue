@@ -72,6 +72,10 @@ const props = defineProps({
     selectedAnswer: {
         type: String,
         default: null
+    },
+     isPlayerActive: {
+         type: Boolean,
+         default: true
     }
 });
 
@@ -90,7 +94,7 @@ function formatTime(seconds) {
 }
 
 function onAnswerClick(questionId, answer) {
-    if (props.selectedAnswer !== null) return; 
+    if (!props.isPlayerActive || props.selectedAnswer !== null) return; 
     emit('submit-answer', questionId, answer);
 }
 </script>

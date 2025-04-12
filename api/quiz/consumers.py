@@ -186,6 +186,10 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
 
         if state['current_index'] == q_index:
             await asyncio.sleep(2)
+            if state['elimination_mode']:
+                unanswered_players = state['active_players'] - state['answered']
+                state['active_players'].difference_update(unanswered_players)
+                await self.broadcast_scores()
             await self.send_next_question()
 
     async def broadcast_scores(self):
