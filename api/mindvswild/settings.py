@@ -1,5 +1,6 @@
 from pathlib import Path
-import environ # type: ignore
+import environ 
+import os
 env = environ.Env()
 
 environ.Env.read_env()
@@ -72,9 +73,10 @@ WSGI_APPLICATION = 'mindvswild.wsgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",  
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+
 CORS_ALLOW_HEADERS = [
     'authorization',
     'content-type',
