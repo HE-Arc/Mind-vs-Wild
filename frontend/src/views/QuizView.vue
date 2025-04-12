@@ -13,8 +13,15 @@
             </q-card-section>
         </q-card>
 
+        <div v-if="!isPlayerActive" class="result-message eliminated">
+            <span>Vous êtes éliminé.</span>
+        </div>
+        
         <div v-if="lastResult" class="result-message"
-            :class="{ 'correct': lastResult === 'correct', 'incorrect': lastResult === 'incorrect' }">
+            :class="{ 
+                'correct': lastResult === 'correct', 
+                'incorrect': lastResult === 'incorrect' 
+            }">
             <span v-if="lastResult === 'correct'">Bonne réponse !</span>
             <span v-else>Réponse incorrecte. La bonne réponse était {{ correctAnswer }}.</span>
         </div>
@@ -189,6 +196,16 @@ function onAnswerClick(questionId, answer) {
         background-color: #f44336;
         color: white;
     }
+}
+
+.result-message.eliminated {
+    background-color: #9e9e9e;
+    color: white;
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
 }
 
 .correct-answer {
