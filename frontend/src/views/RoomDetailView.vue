@@ -118,6 +118,7 @@
         <quiz-view :current-question="currentQuestion" :time-left="timeLeft" :max-time="maxTime"
           :last-result="lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null"
           :correct-answer="lastAnswer?.correctOption" :selected-answer="lastAnswer?.option"
+          :is-player-active="isPlayerActive"
           @submit-answer="submitAnswer" />
       </div>
     </div>
@@ -180,6 +181,7 @@ const gameOptions = ref({
 // Game state
 const isGameStarting = ref(false)
 const gameStarted = ref(false)
+const isPlayerActive = ref(true)
 
 onMounted(async () => {
   const id = route.params.id
@@ -500,6 +502,10 @@ function handleScoresUpdate(data) {
     score: playerScore.score,
     isActive: playerScore.is_active
   }))
+  const currentPlayer = data.scores.find(player => player.user_id === authStore.user.id);
+  if (currentPlayer) {
+    isPlayerActive.value = currentPlayer.is_active;
+  }
 }
 
 function handleAnswerResult(data) {

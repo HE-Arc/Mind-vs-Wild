@@ -117,7 +117,8 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
                 "timer_duration": qtime,
                 "elimination_mode": elimination
             }
-        })
+        })        
+        await self.broadcast_scores()
         await self.send_next_question()
 
     async def handle_submit_answer(self, data):
@@ -156,7 +157,8 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
 
         async with state['lock']:
             state['current_index'] += 1
-            if state['current_index'] >= len(state['questions']):
+            if (state['elimination_mode'] and len(state['active_players']) == 1 
+                or state['current_index'] >= len(state['questions'])):
                 return await self.end_game()
 
             q = state['questions'][state['current_index']]
@@ -186,6 +188,14 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
 
         if state['current_index'] == q_index:
             await asyncio.sleep(2)
+            if state['elimination_mode']:
+                unanswered_players = state['active_players'] - state['answered']
+                state['active_players'].difference_update(unanswered_players)
+                await self.broadcast_scores()
+                
+                if len(state['active_players']) <= 1:
+                     return await self.end_game()
+                 
             await self.send_next_question()
 
     async def broadcast_scores(self):
