@@ -11,6 +11,7 @@ import AcceptInviteView from '@/views/AcceptInviteView.vue'
 import { isAuthenticated } from '@/utils/auth.ts'
 
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
+import AboutView from '@/views/AboutView.vue'
 
 const requireAuth = async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
   const isAuth = await isAuthenticated();
@@ -28,6 +29,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
     },
     {
       path: '/login',
