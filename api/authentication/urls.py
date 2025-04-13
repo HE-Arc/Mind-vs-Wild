@@ -1,12 +1,8 @@
 from django.urls import path
-from .views import login_api, register_api, get_user, logout, delete_user, update_user, update_avatar_type
+from rest_framework.routers import DefaultRouter
+from .views import AuthenticationViewSet
 
-urlpatterns = [
-    path('login/', login_api, name='login_api'),
-    path('register/', register_api, name='register_api'),
-    path('get/', get_user, name='get_user'),
-    path('logout/', logout, name='logout'),
-    path('delete/', delete_user, name='delete_user'),
-    path('update/', update_user, name='update_user'),
-    path('update-avatar/', update_avatar_type, name='update_avatar_type'),
-]
+router = DefaultRouter()
+router.register(r'auth', AuthenticationViewSet, basename='auth')
+
+urlpatterns = router.urls

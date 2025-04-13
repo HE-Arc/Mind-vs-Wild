@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
       }
 
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get_user/`, {
           headers: { Authorization: `Token ${savedToken}` },
         })
 
@@ -61,11 +61,23 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout() {
-      this.token = null
-      this.user = null
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+    async logout() {
+      try {
+        if (this.token) {
+          // Appel au backend pour la déconnexion
+          await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/logout/`, {}, {
+            headers: { Authorization: `Token ${this.token}` }
+          });
+        }
+      } catch (err) {
+        console.error('Erreur lors de la déconnexion:', err);
+      } finally {
+        // Nettoyage local même si l'appel API échoue
+        this.token = null;
+        this.user = null;
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     },
   },
 })

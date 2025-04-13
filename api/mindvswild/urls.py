@@ -20,15 +20,16 @@ from rest_framework.routers import DefaultRouter
 from groups.views import GroupViewSet
 from invite.views import InviteViewSet
 from rooms.views import RoomViewSet
+from authentication.views import AuthenticationViewSet
 
 router = DefaultRouter()
 router.register(r'groups', GroupViewSet, basename='group')
 router.register(r'groups/accept-invite', InviteViewSet, basename='group-invite')
 router.register(r'rooms', RoomViewSet, basename='room')
+router.register(r'auth', AuthenticationViewSet, basename='auth')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('authentication.urls')),
     path('api/', include(router.urls)),
     path('api/', include("quiz.urls")),
 ]
