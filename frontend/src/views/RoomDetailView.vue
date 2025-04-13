@@ -54,7 +54,10 @@
             <q-card class="config-card text-white">
               <q-card-section class="q-card-section">
                 <div class="text-h6">Configuration de la partie</div>
-                <q-toggle v-model="gameOptions.eliminationMode" label="Mode élimination" />
+                <div class="row items-center">
+                  <q-toggle v-model="gameOptions.eliminationMode" label="Mode élimination" />
+                  <div class="text-caption text-grey q-ml-sm">(Min. 2 personnes)</div>
+                </div>
                 <q-select bg-color="white" outlined v-model="gameOptions.questionCount" :options="[5, 10, 15, 20, 25, 30]"
                   label="Nombre de questions" class="q-mb-md" popup-content-class="text-black" />
                 <q-slider v-model="gameOptions.questionTime" :min="10" :max="60" :step="5" label label-always color="green">

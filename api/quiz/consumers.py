@@ -93,6 +93,10 @@ class RoomQuizConsumer(AsyncWebsocketConsumer):
         elimination = bool(options.get('eliminationMode', False))
         category = options.get("category")
 
+        users = await self.get_room_participants(self.room_id)
+        if elimination and len(users) < 2:
+            return await self.send(json.dumps({'error': "Le mode élimination nécessite au moins deux participants"}))
+
         if not await self.load_questions(qcount, category):
             return await self.send(json.dumps({'error': "Chargement des questions échoué"}))
 
