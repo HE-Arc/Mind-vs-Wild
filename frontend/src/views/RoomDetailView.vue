@@ -259,7 +259,6 @@ function connectWebSocket() {
     socket = new WebSocket(wsUrl)
 
     socket.onopen = () => {
-      console.log("WebSocket connecté - room", room.value.id)
       wsStatus.value = 'connected'
       wsError.value = null
     }
@@ -280,7 +279,6 @@ function connectWebSocket() {
     }
 
     socket.onclose = () => {
-      console.log("WebSocket fermé")
       wsStatus.value = 'disconnected'
       socket = null
 
@@ -300,7 +298,6 @@ function connectWebSocket() {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      console.log("Reçu WS:", data)
 
       if (data.error) {
         $q.notify({ type: 'negative', message: data.error })
@@ -438,7 +435,6 @@ function handleNewQuestion(data) {
   // Start local timer
   startLocalTimer(configuredTime);
 
-  console.log(`Nouvelle question: temps configuré=${configuredTime}s`);
 }
 
 
