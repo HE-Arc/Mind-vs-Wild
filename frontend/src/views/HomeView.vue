@@ -76,7 +76,6 @@ const isLoggedIn = computed(() => authStore.isLoggedIn)
   padding: 0 16px 16px;
 }
 
-/* Responsive behavior for small screens */
 @media (max-width: 600px) {
   .my-card {
     padding: 16px;

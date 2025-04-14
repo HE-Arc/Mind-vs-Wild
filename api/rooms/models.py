@@ -31,7 +31,7 @@ class Question(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='questions')
     text = models.CharField(max_length=500)
     correct_answer = models.CharField(max_length=255)
-    options = models.JSONField()  # Stocke les options sous forme de JSON
+    options = models.JSONField() 
 
     def __str__(self):
         return self.text

@@ -15,6 +15,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, username=request.data['username'])
         if not user.check_password(request.data['password']):
             return Response("incorrect password", status=status.HTTP_401_UNAUTHORIZED)
+        # Get or create a token for the user 
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
         return Response({'token': token.key, 'user': serializer.data})

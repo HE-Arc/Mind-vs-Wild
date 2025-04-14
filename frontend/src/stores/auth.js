@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
           this.user = response.data.user
           localStorage.setItem('token', this.token)
           
-          // Charger les groupes après une connexion réussie
+          // load groups after login
           const groupStore = useGroupStore()
           await groupStore.fetchGroups()
           
@@ -64,7 +64,7 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       try {
         if (this.token) {
-          // Appel au backend pour la déconnexion
+          // Call logout API
           await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/logout/`, {}, {
             headers: { Authorization: `Token ${this.token}` }
           });
@@ -72,7 +72,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (err) {
         console.error('Erreur lors de la déconnexion:', err);
       } finally {
-        // Nettoyage local même si l'appel API échoue
+        // Clear the token and user data
         this.token = null;
         this.user = null;
         localStorage.removeItem('token');

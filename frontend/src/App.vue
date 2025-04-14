@@ -16,7 +16,6 @@
       </q-toolbar>
     </q-header>
 
-    <!-- Right Drawer -->
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered>
       <q-list>
         <template v-if="!isLoggedIn">
@@ -126,7 +125,7 @@ onMounted(async () => {
   }
 })
 
-// Ajouter un watcher sur l'état de connexion
+// Watch for login state changes
 watch(() => authStore.isLoggedIn, async (newValue) => {
   if (newValue) {
     await groupStore.fetchGroups()

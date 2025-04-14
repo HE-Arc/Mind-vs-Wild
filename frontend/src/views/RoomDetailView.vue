@@ -117,7 +117,6 @@
           </q-card-section>
         </q-card>
 
-        <!-- Questions au centre -->
         <quiz-view :current-question="currentQuestion" :time-left="timeLeft" :max-time="maxTime"
           :last-result="lastAnswer ? (lastAnswer.correct ? 'correct' : 'incorrect') : null"
           :correct-answer="lastAnswer?.correctOption" :selected-answer="lastAnswer?.option"
@@ -194,11 +193,11 @@ onMounted(async () => {
       $q.notify({ type: 'positive', message: message.value })
     }
 
-    // Vérifier si l'utilisateur actuel est l'hôte de la salle
+    // Check if the user is host
     isHost.value = room.value?.created_by?.id === authStore.user?.id
     const response = await fetch('/categories.json');
     categories.value = await response.json();
-    // Établir la connexion WebSocket
+    // Start connection with websocket
     connectWebSocket()
   } catch (error) {
     console.error('Erreur lors du chargement de la room:', error)
@@ -210,26 +209,25 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Arrêter le timer local
+  // Stop local timer
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
   }
 
-  // Fermer proprement la connexion WebSocket lors de la sortie du composant
+  // Close the connection with WebSocket
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close()
   }
 })
 
 function leaveRoom() {
-  // Arrêter le timer
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
   }
 
-  // Fermer la connexion WebSocket avant de quitter
+  // Close connection with webSocket before leaving
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close()
   }
@@ -239,9 +237,8 @@ function leaveRoom() {
   })
 }
 
-// Fonction simplifiée pour établir la connexion WebSocket
+// Function for connecting to WebSocket
 function connectWebSocket() {
-  // Si une connexion existe déjà, ne rien faire
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return
   }
@@ -287,7 +284,7 @@ function connectWebSocket() {
       wsStatus.value = 'disconnected'
       socket = null
 
-      // Proposer une reconnexion manuelle, pas de boucle
+      // Ask the user for reconnection
       if (room.value) {
         $q.notify({
           type: 'warning',
@@ -335,7 +332,7 @@ function connectWebSocket() {
         case 'game_over':
           handleGameOver(data)
           break
-        // Ajouter un gestionnaire pour l'événement "answer_result"
+        // Add a new case for answer_result
         case 'answer_result':
           handleAnswerResult(data)
           break
@@ -357,7 +354,7 @@ function connectWebSocket() {
   }
 }
 
-// Gestionnaires d'événements WebSocket
+// Handle different WebSocket messages
 function handleGameState(data) {
   if (data.state?.is_started) {
     gameStarted.value = true
@@ -376,14 +373,14 @@ function handleGameState(data) {
 function handleGameStarting(data) {
   isGameStarting.value = true
 
-  // Mettre à jour les options du jeu avec les paramètres reçus
+  // Update options based on the server settings
   if (data.settings) {
-    // Stocker le timer_duration configuré pour l'utiliser plus tard
+    // Store the timer duration in the game options
     if (data.settings.timer_duration) {
       gameOptions.value.questionTime = data.settings.timer_duration
     }
 
-    // Autres options
+    // other option
     if (data.settings.question_count) {
       gameOptions.value.questionCount = data.settings.question_count
     }
@@ -430,45 +427,38 @@ function handleNewQuestion(data) {
   isGameStarting.value = false
   currentQuestion.value = data.question
 
-  // Définir le temps maximal selon la configuration de la room
+  // Define max timer in the room
   const configuredTime = gameOptions.value.questionTime;
   maxTime.value = configuredTime;
 
-  // Réinitialiser l'UI
+  // Reset UI
   answerSubmitted.value = false;
   lastAnswer.value = null;
 
-  // Démarrer un timer purement local
+  // Start local timer
   startLocalTimer(configuredTime);
 
   console.log(`Nouvelle question: temps configuré=${configuredTime}s`);
 }
 
-function handleTimerUpdate(data) {
-  // Ne rien faire - on laisse le timer local gérer le temps
-  // On ne fait que logger l'information pour le débogage
-  console.log(`Timer serveur: ${data.time_remaining}s, timer local: ${timeLeft.value}s`);
-}
 
-// Fonction pour démarrer un timer local fluide
 function startLocalTimer(initialTime) {
-  // Nettoyer tout timer existant
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
   }
 
-  // Calculer le moment précis où le timer se terminera
+  // Calculate when the timer ends
   questionEndTime = Date.now() + (initialTime * 1000)
   timeLeft.value = initialTime
 
-  // Créer un intervalle pour mettre à jour le timer toutes les 100ms (pour une animation fluide)
+  // Create interval for timers fluidity
   timerInterval = setInterval(() => {
-    // Calculer le temps restant en secondes
+    // Calculate remaining time in seconds
     const remainingMs = questionEndTime - Date.now()
     const remainingSecs = Math.ceil(remainingMs / 1000)
 
-    // Mettre à jour le temps restant
+    // Update time left
     if (remainingSecs <= 0) {
       timeLeft.value = 0
       clearInterval(timerInterval)
@@ -479,9 +469,8 @@ function startLocalTimer(initialTime) {
   }, 100)
 }
 
-// Nettoyer le timer lors de la fin de partie
+// Clean timer at the end of the game
 function handleGameOver(data) {
-  // Arrêter le timer
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
@@ -498,7 +487,7 @@ function handleGameOver(data) {
 }
 
 function handleScoresUpdate(data) {
-  // Mettre à jour le tableau des scores avec les données du serveur
+  // Update scoreboard with server data
   leaderboard.value = data.scores.map(playerScore => ({
     id: playerScore.user_id,
     username: playerScore.username,
@@ -520,15 +509,12 @@ function handleAnswerResult(data) {
   }
 }
 
-// Fonction pour récupérer le nom d'utilisateur à partir de l'ID
 function getPlayerUsername(userId) {
   const participant = room.value?.participants.find(p => p.user.id === userId)
   return participant?.user.username || "Joueur inconnu"
 }
 
-// Fonction pour démarrer le jeu (uniquement pour l'hôte)
 function startGameWithOptions() {
-  // Vérification que l'utilisateur est bien l'hôte
   if (!isHost.value) {
     $q.notify({
       type: 'negative',
@@ -537,7 +523,6 @@ function startGameWithOptions() {
     return
   }
 
-  // Vérification de la connexion WebSocket
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     $q.notify({
       type: 'negative',
@@ -546,7 +531,7 @@ function startGameWithOptions() {
     return
   }
 
-  // Envoi de la demande de démarrage du jeu
+  // Send start game request
   socket.send(JSON.stringify({
     action: 'start_game',
     options: {
@@ -555,14 +540,12 @@ function startGameWithOptions() {
     }
   }))
 
-  // Notification de démarrage
   $q.notify({
     type: 'positive',
     message: 'Démarrage de la partie...'
   })
 }
 
-// Fonction pour envoyer une réponse à une question
 function submitAnswer(questionId, option) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     $q.notify({
@@ -582,7 +565,6 @@ function submitAnswer(questionId, option) {
   }))
 }
 
-// Couleurs pour les joueurs
 function getPlayerColor(index) {
   const colors = ['primary', 'purple', 'deep-orange', 'green', 'blue', 'red']
   return colors[index % colors.length]
