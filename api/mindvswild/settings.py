@@ -69,12 +69,14 @@ ASGI_APPLICATION = 'mindvswild.asgi.application'
 
 WSGI_APPLICATION = 'mindvswild.wsgi.application'    
 
-
-
+# Configuration Redis pour les channels en production
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(env('REDIS_HOST', default='redis'), env.int('REDIS_PORT', default=6379))],
+        },
+    },
 }
 
 CORS_ALLOW_HEADERS = [

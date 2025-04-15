@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=mindvswild_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=supersecurepassword
+    ports:
+      - "5432:5432"
+    networks:
+      - mindvswild-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - mindvswild-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api:/app
+      - static_files:/app/staticfiles
+    env_file:
+      - ./api/.env.lan
+    environment:
+      - DJANGO_SETTINGS_MODULE=mindvswild.settings
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - mindvswild-network
+    command: >
+      sh -c "cp .env.lan .env &&
+             cp .env.lan mindvswild/.env &&
+             python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             daphne -b 0.0.0.0 -p 8000 mindvswild.asgi:application"
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env.lan
+    ports:
+      - "5173:5173"
+    networks:
+      - mindvswild-network
+    command: >
+      sh -c "cp .env.lan .env &&
+             npm run dev -- --host 0.0.0.0"
+
+networks:
+  mindvswild-network:
+
+
+volumes:
+  postgres_data:
+  static_files:
