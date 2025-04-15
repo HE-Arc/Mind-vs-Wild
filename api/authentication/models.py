@@ -9,6 +9,7 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} Profile"
 
+    # Use of robohash api to get simple profile picture unique for each user.
     def get_avatar_url(self):
         set_type = self.profile_picture_type or 1
         return f"https://robohash.org/{self.user.username}?set=set{set_type}"

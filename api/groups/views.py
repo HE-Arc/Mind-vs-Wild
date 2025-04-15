@@ -28,10 +28,8 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     # Save the group creator as admin
     def perform_create(self, serializer):
-        """Ajouter le créateur du groupe en tant qu'admin"""
-        print(f"Creating group with data: {serializer.validated_data}")
+        """Add the creator as admin of the group"""
         group = serializer.save(created_by=self.request.user)
-        print(f"Group created: {group.name}")
         GroupUser.objects.create(group=group, user=self.request.user, is_admin=True)
         return group
 

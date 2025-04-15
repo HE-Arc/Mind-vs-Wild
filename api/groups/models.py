@@ -17,11 +17,13 @@ class Group(models.Model):
 class GroupUser(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="memberships")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="group_memberships")
-    is_admin = models.BooleanField(default=False)  # True pour le créateur/admin du groupe
+    # True if the user is an admin of the group
+    is_admin = models.BooleanField(default=False)  
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('group', 'user')  # Un utilisateur ne peut appartenir qu'une fois à un groupe
+        # A user can only be in a group once
+        unique_together = ('group', 'user')  
 
     def __str__(self):
         return f"{self.user.username} in {self.group.name}"

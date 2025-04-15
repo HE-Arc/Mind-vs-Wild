@@ -34,14 +34,15 @@ export const isAuthenticated = async () => {
   }
 
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get/`, {
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get_user/`, {
       headers: { Authorization: `Token ${token}` },
       withCredentials: true,
     })
 
     return response.status === 200
   } catch (error) {
-    console.error('Erreur lors de la vérification du token:', error)
+    // Si l'erreur est 401, le token n'est plus valide
+    console.error('Auth check failed:', error)
     localStorage.removeItem('token')
     return false
   }

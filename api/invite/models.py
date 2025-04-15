@@ -10,13 +10,16 @@ class GroupInvitation(models.Model):
     invited_user = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.CASCADE, related_name="invitations_received"
     )
-    token = models.CharField(max_length=64, unique=True)  # Token unique d'invitation
+    # Unique token for the invitation
+    token = models.CharField(max_length=64, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()  # Date d'expiration de l'invitation
-    used = models.BooleanField(default=False)  # Pour marquer les invitations déjà utilisées
+    # Expiration date for the invitation
+    expires_at = models.DateTimeField() 
+    # True if the invitation has been used
+    used = models.BooleanField(default=False) 
 
     def is_valid(self):
-        """Vérifie si l'invitation est valide (pas expirée ni déjà utilisée)."""
+        """Checks if the invitation is valid."""
         return (not self.used) and (timezone.now() < self.expires_at)
 
     def __str__(self):

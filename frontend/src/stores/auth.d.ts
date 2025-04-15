@@ -1,7 +1,12 @@
-// auth.d.ts
+type AuthStore = {
+  isLoggedIn: boolean;
+  user: any;
+  token: string | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  restoreUser: () => Promise<void>;
+}
+
 declare module '@/stores/auth' {
-    import { StoreDefinition } from 'pinia';
-  
-    export const useAuthStore: StoreDefinition;
-  }
-  
+  export function useAuthStore(): AuthStore;
+}
