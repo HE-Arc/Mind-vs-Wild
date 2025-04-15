@@ -36,6 +36,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   setup() {
@@ -45,6 +46,7 @@ export default {
     const confirmPassword = ref('')
     const errorMessage = ref('')
     const router = useRouter()
+    const authStore = useAuthStore()
 
     const register = async () => {
       if (password.value !== confirmPassword.value) {
@@ -60,7 +62,15 @@ export default {
         }, {
           withCredentials: true
         });
-        router.push('/login');
+        
+        const success = await authStore.login(username.value, password.value)
+        
+        if (success) {
+          await authStore.restoreUser() 
+          router.push('/profile') 
+        } else {
+          router.push('/login')
+        }
       } catch (error) {
         errorMessage.value = error.response?.data?.error || "Une erreur inconnue est survenue";
       }
