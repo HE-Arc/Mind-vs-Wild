@@ -47,7 +47,8 @@
               <div class="q-mb-md">
                 <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm">
                   <q-tooltip>
-                    Générer un lien d'invitation utilisable par n'importe qui. Une fois utilisé par un utilisateur, ce lien devient invalide.
+                    Générer un lien d'invitation utilisable par n'importe qui. Une fois utilisé par un utilisateur, ce
+                    lien devient invalide.
                   </q-tooltip>
                 </q-icon>
                 <strong>Invitation Générique :</strong>
@@ -63,7 +64,8 @@
               <div class="q-mb-md">
                 <q-icon name="info" size="xs" color="grey-7" class="q-mr-sm">
                   <q-tooltip>
-                    Générer un lien d'invitation utilisable uniquement par l'utilisateur spécifié dans le champs. Une fois utilisé ce lien devient invalide.
+                    Générer un lien d'invitation utilisable uniquement par l'utilisateur spécifié dans le champs. Une
+                    fois utilisé ce lien devient invalide.
                   </q-tooltip>
                 </q-icon>
                 <strong>Invitation Nominative :</strong>
@@ -225,8 +227,20 @@ async function createRoom() {
   }
 }
 
-function goToRoom(room) {
-  router.push(`/rooms/${room.id}`)
+async function goToRoom(room) {
+  try {
+    const response = await roomStore.joinRoom(room.id)
+    const joinedRoom = response.room
+    router.push({
+      path: `/rooms/${ joinedRoom.id }`,
+      query: {
+      message: response.detail,
+    }
+    })
+} catch (error) {
+  console.error("Erreur lors de la jointure :", error)
+  $q.notify({ type: 'negative', message: 'Impossible de rejoindre cette room.' })
+}
 }
 </script>
 
@@ -238,5 +252,4 @@ function goToRoom(room) {
 .q-card-section {
   background-color: #2c2c38;
 }
-
 </style>
