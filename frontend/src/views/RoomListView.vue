@@ -3,7 +3,7 @@
     <div class="row items-center justify-between q-mb-md">
       <h2 class="q-ma-none text-white">Liste des Rooms</h2>
       <q-btn 
-        color="primary" 
+        class="btn"
         icon="add" 
         label="Créer une Room" 
         @click="showCreateModal = true"
@@ -140,5 +140,9 @@ const joinRoom = async (id) => {
 
 .q-card-section {
   background-color: #2c2c38;
+}
+.btn{
+  background-color: #2c2c38;
+  color: white;
 }
 </style>
