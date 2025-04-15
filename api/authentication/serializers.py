@@ -3,13 +3,19 @@ from django.contrib.auth.models import User
 from .models import Profile
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=20)
     avatar_url = serializers.SerializerMethodField()
     profile_picture_type = serializers.IntegerField(write_only=True, required=False, default=1)
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        max_length=68,
+        style={'input_type': 'password'}
+    )
 
     class Meta:
         model = User 
         fields = ['id', 'username', 'password', 'email', 'avatar_url', 'profile_picture_type']
-        extra_kwargs = {'password': {'write_only': True}}
 
     def get_avatar_url(self, obj):
         profile = getattr(obj, 'auth_profile', None)

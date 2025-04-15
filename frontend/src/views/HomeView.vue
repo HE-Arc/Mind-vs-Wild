@@ -1,5 +1,3 @@
-
-
 <template>
   <main class="main-container">
     <QCard class="my-card">
@@ -13,8 +11,14 @@
       </QCardSection>
 
       <QCardActions class="btn-group">
-        <QBtn :to="isLoggedIn ? '/profile' : '/register'" color="primary" label="S'enregistrer" />
-        <QBtn :to="isLoggedIn ? '/profile' : '/login'" color="primary" label="Se connecter" />
+        <template v-if="!isLoggedIn">
+          <QBtn to="/register" color="primary" label="S'enregistrer" />
+          <QBtn to="/login" color="primary" label="Se connecter" />
+        </template>
+        <template v-else>
+          <QBtn to="/profile" color="primary" label="Mon profil" />
+          <QBtn to="/rooms" color="primary" label="Rejoindre une partie" />
+        </template>
       </QCardActions>
     </QCard>
   </main>
